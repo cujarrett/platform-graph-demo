@@ -5,6 +5,7 @@ Two federated GraphQL subgraphs (`records`, `reviews`) demonstrating Apollo Fede
 ## Rules
 
 - **Never run `git add`, `git commit`, `git push`, or any git command that writes to or modifies the index, repository history, or remotes.** Output the commands for the user to run - staging is part of their review, and running it for them removes the checkpoint.
+- **Never add a `Co-Authored-By` trailer or a "Generated with Claude Code" line** to commit messages or PR descriptions, including in suggested commit messages. Commits are authored by the user alone.
 - **Whenever a task requires a commit, always give a suggested commit message** - never leave the user to write it themselves.
 - **Give `git add` and the commit as two separate steps, listing every file explicitly** - never `git add .` or `git add -A`.
 - **Never output a `git push` command.** The user pushes as a deliberate human step.
