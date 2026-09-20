@@ -30,6 +30,10 @@ jobs:
       - run: npm run build
 
   reviews-schema-check:
+    # A check needs a published variant to compare against. The repo variable
+    # GRAPH_READY is set to true once storefront-homelab@preprod exists, and
+    # while this job is skipped, build-and-push and deploy are skipped too.
+    if: vars.GRAPH_READY == 'true'
     runs-on: ubuntu-latest
     env:
       APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
