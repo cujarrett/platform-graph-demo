@@ -30,6 +30,7 @@ build:
 install:
     #!/usr/bin/env bash
     set -euo pipefail
+    npm install
     for s in {{both}}; do
         (cd $s && npm install)
     done
