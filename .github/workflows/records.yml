@@ -36,7 +36,7 @@ jobs:
       APOLLO_ELV2_LICENSE: accept
     steps:
       - uses: actions/checkout@v4
-      - uses: apollographql/rover-actions/install@v1
+      - uses: apollographql/rover-actions/install-rover-cli@v1
       - run: rover subgraph check storefront-homelab@preprod --name records --schema records/schema.graphql
 
   build-and-push:

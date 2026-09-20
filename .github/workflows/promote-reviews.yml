@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: apollographql/rover-actions/install@v1
+      - uses: apollographql/rover-actions/install-rover-cli@v1
       - run: rover subgraph check storefront-homelab@prod --name reviews --schema reviews/schema.graphql
       - uses: actions/checkout@v4
         with:
