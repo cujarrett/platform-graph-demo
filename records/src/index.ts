@@ -13,7 +13,7 @@ const schemaPath =
   process.env.SCHEMA_PATH ?? new URL('../schema.graphql', import.meta.url)
 const typeDefs = parse(readFileSync(schemaPath, 'utf-8'))
 const server = new ApolloServer({
-  schema: buildSubgraphSchema({ typeDefs, resolvers }),
+  schema: buildSubgraphSchema([{ typeDefs, resolvers }]),
 })
 await server.start()
 
