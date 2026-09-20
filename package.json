@@ -1,0 +1,12 @@
+{
+  "name": "platform-graph-demo",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "eslint": "^9",
+    "eslint-config-prettier": "^9",
+    "prettier": "^3",
+    "typescript-eslint": "^8"
+  }
+}

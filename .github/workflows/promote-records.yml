@@ -1,0 +1,33 @@
+name: promote-records
+
+on:
+  workflow_dispatch:
+
+env:
+  APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+  APOLLO_ELV2_LICENSE: accept
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: apollographql/rover-actions/install@v1
+      - run: rover subgraph check storefront-homelab@prod --name records --schema records/schema.graphql
+      - uses: actions/checkout@v4
+        with:
+          repository: cujarrett/homelab-workspaces
+          token: ${{ secrets.HOMELAB_WORKSPACES_TOKEN }}
+          path: homelab-workspaces
+      - run: |
+          cd homelab-workspaces
+          git checkout -b promote-records-$(date +%s)
+          IMAGE=$(grep -oP 'ghcr\.io/cujarrett/platform-graph-demo-records@sha256:[0-9a-f]+' graph-preprod/records.yaml)
+          sed -i "s|image: ghcr\.io/cujarrett/platform-graph-demo-records[:@].*|image: $IMAGE|" graph-prod/records.yaml
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git commit -am "records: promote $IMAGE to prod"
+          git push -u origin HEAD
+          gh pr create --title "records: promote to prod" --body "Schema check against storefront-homelab@prod passed. Bumps graph-prod/records.yaml to the digest running in preprod."
+        env:
+          GH_TOKEN: ${{ secrets.HOMELAB_WORKSPACES_TOKEN }}

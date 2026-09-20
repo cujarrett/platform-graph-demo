@@ -1,0 +1,77 @@
+name: reviews
+
+on:
+  push:
+    branches: [main]
+    paths: ["reviews/**"]
+  pull_request:
+    paths: ["reviews/**"]
+
+env:
+  APOLLO_KEY: ${{ secrets.APOLLO_KEY }}
+  APOLLO_ELV2_LICENSE: accept
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: reviews
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+      - run: npm run build
+      - uses: apollographql/rover-actions/install@v1
+      - run: rover subgraph check storefront-homelab@preprod --name reviews --schema schema.graphql
+
+  build-and-push:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    outputs:
+      digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: sigstore/cosign-installer@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: reviews
+          platforms: linux/arm64
+          push: true
+          tags: ghcr.io/cujarrett/platform-graph-demo-reviews:sha-${{ github.sha }}
+      # Signed by digest, because a tag can be moved after signing. This job
+      # runs only on main, so a signature means the commit was reviewed.
+      - run: cosign sign --yes ghcr.io/cujarrett/platform-graph-demo-reviews@${{ steps.build.outputs.digest }}
+
+  deploy:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: cujarrett/homelab-workspaces
+          token: ${{ secrets.HOMELAB_WORKSPACES_TOKEN }}
+      - run: |
+          sed -i "s|image: ghcr.io/cujarrett/platform-graph-demo-reviews[:@].*|image: ghcr.io/cujarrett/platform-graph-demo-reviews@${{ needs.build-and-push.outputs.digest }}|" graph-preprod/reviews.yaml
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git commit -am "reviews: deploy ${{ needs.build-and-push.outputs.digest }}"
+          git push

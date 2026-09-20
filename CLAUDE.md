@@ -1,6 +1,6 @@
 # platform-graph-demo
 
-Two federated GraphQL subgraphs (`records`, `reviews`) demonstrating Apollo Federation on the homelab platform. See [Platform Graph](https://github.com/cujarrett/homelab/blob/main/local-only/platform-graph.md) in the `homelab` repo for the full design - schemas here are the first thing that design's phase 2 produces.
+Two federated GraphQL subgraphs (`records`, `reviews`) demonstrating Apollo Federation on the homelab platform. See [Platform Graph](https://github.com/cujarrett/homelab/blob/main/platform/docs/graph.md) in the `homelab` repo for the full design.
 
 ## Rules
 
@@ -10,7 +10,7 @@ Two federated GraphQL subgraphs (`records`, `reviews`) demonstrating Apollo Fede
 - **Give `git add` and the commit as two separate steps, listing every file explicitly** - never `git add .` or `git add -A`.
 - **Never output a `git push` command.** The user pushes as a deliberate human step.
 - **No semicolons in JS/TS.** Enforced by Prettier (`semi: false`, root `.prettierrc.json`) and ESLint (`semi: ["error", "never"]`, root `eslint.config.js`). Both subgraphs share these root configs rather than duplicating them.
-- **The schema is never hand-published outside CI.** `records/schema.graphql` and `reviews/schema.graphql` are published by GitHub Actions on merge to `main`, from the same commit that builds the image. See [Where the schema lives](https://github.com/cujarrett/homelab/blob/main/local-only/platform-graph.md#where-the-schema-lives).
+- **The platform publishes the schema from the deployed image.** Nothing in this repo runs `rover subgraph publish`. Each image ships its `schema.graphql` at `/schema.graphql`. See [How the schema reaches the registry](https://github.com/cujarrett/homelab/blob/main/platform/docs/graph.md#3-how-the-schema-reaches-the-registry).
 
 ### Pre-commit safety check
 
@@ -43,7 +43,7 @@ reviews/    extends Record with reviews, no database
 | `just build` | `tsc` to `dist/`, per subgraph |
 | `just install` | `npm install` in both |
 | `just dev` | composes both subgraphs locally with `rover dev` - run `npm run dev` in each subgraph first |
-| `just check <subgraph>` | `rover subgraph check` against `storefront-homelab@dev` |
+| `just check <subgraph>` | `rover subgraph check` against `storefront-homelab@preprod` |
 | `just promote <subgraph>` | checks against prod, then triggers the promote workflow |
 
 ## Required secrets (GitHub → repo settings → Secrets)
