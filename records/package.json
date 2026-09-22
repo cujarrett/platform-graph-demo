@@ -14,7 +14,7 @@
     "@as-integrations/express5": "^1",
     "cors": "^2",
     "express": "^5",
-    "graphql": "^16"
+    "graphql": "^17.0.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
