@@ -9,7 +9,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@apollo/server": "^4",
+    "@apollo/server": "^5.0.0",
     "@apollo/subgraph": "^2",
     "cors": "^2",
     "express": "^4",
