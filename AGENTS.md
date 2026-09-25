@@ -7,7 +7,7 @@ Two federated GraphQL subgraphs (`records`, `reviews`) demonstrating Apollo Fede
 - **Never run `git add`, `git commit`, `git push`, or any git command that writes to or modifies the index, repository history, or remotes.** Output the commands for the user to run - staging is part of their review, and running it for them removes the checkpoint.
 - **Never add a `Co-Authored-By` trailer or a "Generated with Claude Code" line** to commit messages or PR descriptions, including in suggested commit messages. Commits are authored by the user alone.
 - **Whenever a task requires a commit, always give a suggested commit message** - never leave the user to write it themselves.
-- **Give `git add` and the commit as two separate steps, listing every file explicitly** - never `git add .` or `git add -A`.
+- **Give `git add` and the commit as two separate steps, listing every file explicitly.** Never `git add .` or `git add -A`.
 - **Never output a `git push` command.** The user pushes as a deliberate human step.
 - **No semicolons in JS/TS.** Enforced by Prettier (`semi: false`, root `.prettierrc.json`) and ESLint (`semi: ["error", "never"]`, root `eslint.config.js`). Both subgraphs share these root configs rather than duplicating them.
 - **The platform publishes the schema from the deployed image.** Nothing in this repo runs `rover subgraph publish`. Each image ships its `schema.graphql` at `/schema.graphql`. See [How the schema reaches the registry](https://github.com/cujarrett/homelab/blob/main/platform/docs/graph.md#3-how-the-schema-reaches-the-registry).
@@ -35,16 +35,7 @@ reviews/    extends Record with reviews, no database
 
 ## Build tool: `just`, not `make`
 
-| Recipe | What it does |
-|---|---|
-| `just ci` | lint → test → build, for both subgraphs |
-| `just lint` | `tsc --noEmit` + eslint + prettier check, per subgraph |
-| `just test` | `vitest run`, per subgraph |
-| `just build` | `tsc` to `dist/`, per subgraph |
-| `just install` | `npm install` in both |
-| `just dev` | composes both subgraphs locally with `rover dev` - run `npm run dev` in each subgraph first |
-| `just check <subgraph>` | `rover subgraph check` against `storefront-homelab@test` |
-| `just promote <subgraph>` | checks against prod, then triggers the promote workflow |
+`just --list` shows every recipe. `just ci` before pushing. `just dev` composes both subgraphs locally from `supergraph-config.yaml`; `just dev-test` runs one from source with every other schema pulled from the test variant.
 
 ## Required secrets (GitHub → repo settings → Secrets)
 
