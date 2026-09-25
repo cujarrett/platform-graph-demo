@@ -41,4 +41,4 @@ just check records   # or reviews
 just promote records
 ```
 
-Opens a PR in `homelab-workspaces` moving the digest running in preprod into `graph-prod`, after confirming the schema still composes against `storefront-homelab@prod`.
+Opens a PR in `homelab-workspaces` moving the digest running in test into `graph-prod`, after confirming the schema still composes against `storefront-homelab@prod`.

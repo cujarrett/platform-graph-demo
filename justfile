@@ -39,16 +39,16 @@ install:
 dev:
     APOLLO_ELV2_LICENSE=accept rover dev --supergraph-config supergraph-config.yaml
 
-# this subgraph from source, every other schema pulled from preprod. The
+# this subgraph from source, every other schema pulled from test. The
 # config file names the local one, plus a routing_url for any you port-forward
-dev-preprod config="override.yaml":
-    APOLLO_ELV2_LICENSE=accept rover dev --graph-ref storefront-homelab@preprod --supergraph-config {{config}}
+dev-test config="override.yaml":
+    APOLLO_ELV2_LICENSE=accept rover dev --graph-ref storefront-homelab@test --supergraph-config {{config}}
 
-# does this compose against the preprod variant, and does it break a real operation
+# does this compose against the test variant, and does it break a real operation
 check subgraph:
-    rover subgraph check storefront-homelab@preprod --name {{subgraph}} --schema {{subgraph}}/schema.graphql
+    rover subgraph check storefront-homelab@test --name {{subgraph}} --schema {{subgraph}}/schema.graphql
 
-# check against prod, then open the PR moving the preprod digest into graph-prod
+# check against prod, then open the PR moving the test digest into graph-prod
 promote subgraph:
     rover subgraph check storefront-homelab@prod --name {{subgraph}} --schema {{subgraph}}/schema.graphql
     gh workflow run promote-{{subgraph}}.yml

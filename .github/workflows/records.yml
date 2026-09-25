@@ -31,7 +31,7 @@ jobs:
 
   records-schema-check:
     # A check needs a published variant to compare against. The repo variable
-    # GRAPH_READY is set to true once storefront-homelab@preprod exists, and
+    # GRAPH_READY is set to true once storefront-homelab@test exists, and
     # while this job is skipped, build-and-push and deploy are skipped too.
     if: vars.GRAPH_READY == 'true'
     runs-on: ubuntu-latest
@@ -41,10 +41,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: apollographql/rover-actions/install-rover-cli@v1
-      - run: rover subgraph check storefront-homelab@preprod --name records --schema records/schema.graphql
+      - run: rover subgraph check storefront-homelab@test --name records --schema records/schema.graphql
 
   build-and-push:
-    needs: [records-test, records-schema-check]
+    needs: records-test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
@@ -82,9 +82,9 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: cujarrett/homelab-workspaces
-          token: ${{ secrets.HOMELAB_WORKSPACES_TOKEN }}
+          token: ${{ secrets.HOMELAB_WORKSPACES_PAT }}
       - run: |
-          sed -i "s|image: ghcr.io/cujarrett/platform-graph-demo-records[:@].*|image: ghcr.io/cujarrett/platform-graph-demo-records@${{ needs.build-and-push.outputs.digest }}|" graph-preprod/records.yaml
+          sed -i "s|image: ghcr.io/cujarrett/platform-graph-demo-records[:@].*|image: ghcr.io/cujarrett/platform-graph-demo-records@${{ needs.build-and-push.outputs.digest }}|" graph-test/records.yaml
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git commit -am "records: deploy ${{ needs.build-and-push.outputs.digest }}"

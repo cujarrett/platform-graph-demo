@@ -17,17 +17,17 @@ jobs:
       - uses: actions/checkout@v7
         with:
           repository: cujarrett/homelab-workspaces
-          token: ${{ secrets.HOMELAB_WORKSPACES_TOKEN }}
+          token: ${{ secrets.HOMELAB_WORKSPACES_PAT }}
           path: homelab-workspaces
       - run: |
           cd homelab-workspaces
           git checkout -b promote-reviews-$(date +%s)
-          IMAGE=$(grep -oP 'ghcr\.io/cujarrett/platform-graph-demo-reviews@sha256:[0-9a-f]+' graph-preprod/reviews.yaml)
+          IMAGE=$(grep -oP 'ghcr\.io/cujarrett/platform-graph-demo-reviews@sha256:[0-9a-f]+' graph-test/reviews.yaml)
           sed -i "s|image: ghcr\.io/cujarrett/platform-graph-demo-reviews[:@].*|image: $IMAGE|" graph-prod/reviews.yaml
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
           git commit -am "reviews: promote $IMAGE to prod"
           git push -u origin HEAD
-          gh pr create --title "reviews: promote to prod" --body "Schema check against storefront-homelab@prod passed. Bumps graph-prod/reviews.yaml to the digest running in preprod."
+          gh pr create --title "reviews: promote to prod" --body "Schema check against storefront-homelab@prod passed. Bumps graph-prod/reviews.yaml to the digest running in test."
         env:
-          GH_TOKEN: ${{ secrets.HOMELAB_WORKSPACES_TOKEN }}
+          GH_TOKEN: ${{ secrets.HOMELAB_WORKSPACES_PAT }}

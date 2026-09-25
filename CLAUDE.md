@@ -43,7 +43,7 @@ reviews/    extends Record with reviews, no database
 | `just build` | `tsc` to `dist/`, per subgraph |
 | `just install` | `npm install` in both |
 | `just dev` | composes both subgraphs locally with `rover dev` - run `npm run dev` in each subgraph first |
-| `just check <subgraph>` | `rover subgraph check` against `storefront-homelab@preprod` |
+| `just check <subgraph>` | `rover subgraph check` against `storefront-homelab@test` |
 | `just promote <subgraph>` | checks against prod, then triggers the promote workflow |
 
 ## Required secrets (GitHub → repo settings → Secrets)
@@ -51,6 +51,6 @@ reviews/    extends Record with reviews, no database
 | Secret | Used by | Scope needed |
 |---|---|---|
 | `APOLLO_KEY` | every workflow | a graph API key for `storefront-homelab`, not a personal key |
-| `HOMELAB_WORKSPACES_TOKEN` | deploy + promote workflows | a PAT with push access to `cujarrett/homelab-workspaces` |
+| `HOMELAB_WORKSPACES_PAT` | deploy + promote workflows | a PAT with push access to `cujarrett/homelab-workspaces` |
 
 `GITHUB_TOKEN` (built in) covers the `ghcr.io` image push.
