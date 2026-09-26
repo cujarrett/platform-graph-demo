@@ -68,6 +68,10 @@ jobs:
         with:
           context: reviews
           platforms: linux/arm64
+          # A plain manifest, not an index. Kyverno resolves an index by looking for
+          # an amd64 child, which a single-arch image never has, and fails there.
+          provenance: false
+          sbom: false
           push: true
           tags: ghcr.io/cujarrett/platform-graph-demo-reviews:sha-${{ github.sha }}
       # Signed by digest, because a tag can be moved after signing. This job
