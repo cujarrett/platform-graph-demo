@@ -1,54 +1,41 @@
-both := "records reviews"
-
-# lint -> test -> build, for every subgraph
-ci: lint test build
-
-lint:
+# lint, test and build the backend, then lint and build the page
+ci:
     #!/usr/bin/env bash
     set -euo pipefail
-    for s in {{both}}; do
-        echo "== $s: lint =="
-        (cd $s && npm run lint)
-    done
-
-test:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    for s in {{both}}; do
-        echo "== $s: test =="
-        (cd $s && npm run test)
-    done
-
-build:
-    #!/usr/bin/env bash
-    set -euo pipefail
-    for s in {{both}}; do
-        echo "== $s: build =="
-        (cd $s && npm run build)
-    done
+    (cd backend && npm run lint && npm run test && npm run build)
+    (cd spa && npm run lint && npm run build)
 
 install:
     #!/usr/bin/env bash
     set -euo pipefail
     npm install
-    for s in {{both}}; do
-        (cd $s && npm install)
-    done
+    (cd backend && npm install)
+    (cd spa && npm install)
 
-# every subgraph from source, composed locally by a local router
+# the page and backend from source, against the prod router. Nothing deployed.
 dev:
-    APOLLO_ELV2_LICENSE=accept rover dev --supergraph-config supergraph-config.yaml
+    #!/usr/bin/env bash
+    set -euo pipefail
+    for port in 4200 14000 18080; do
+        if lsof -ti:"$port" -sTCP:LISTEN >/dev/null 2>&1; then
+            echo "port $port is already in use - run 'just stop' first" >&2
+            exit 1
+        fi
+    done
+    # A port-forward exits when its pod restarts, so it runs in a loop.
+    (while true; do kubectl port-forward svc/storefront-router -n graph-prod 14000:80 >/dev/null 2>&1; sleep 1; done) &
+    forward=$!
+    # Kill only what this recipe started, so a failure here cannot take out the shell.
+    trap 'kill $forward $backend 2>/dev/null; pkill -f "port-forward svc/storefront-router" 2>/dev/null; true' EXIT
+    until curl -s -o /dev/null localhost:14000/ 2>/dev/null; do sleep 1; done
+    (cd backend && ROUTER_URL=http://localhost:14000/ PORT=18080 METRICS_PORT=19090 npm run dev) &
+    backend=$!
+    until curl -s -o /dev/null localhost:18080/healthz 2>/dev/null; do sleep 1; done
+    (cd spa && npm start)
 
-# this subgraph from source, every other schema pulled from test. The
-# config file names the local one, plus a routing_url for any you port-forward
-dev-test config="override.yaml":
-    APOLLO_ELV2_LICENSE=accept rover dev --graph-ref storefront-homelab@test --supergraph-config {{config}}
-
-# does this compose against the test variant, and does it break a real operation
-check subgraph:
-    rover subgraph check storefront-homelab@test --name {{subgraph}} --schema {{subgraph}}/schema.graphql
-
-# check against prod, then open the PR moving the test digest into graph-prod
-promote subgraph:
-    rover subgraph check storefront-homelab@prod --name {{subgraph}} --schema {{subgraph}}/schema.graphql
-    gh workflow run promote-{{subgraph}}.yml
+# stop anything left behind by a previous just dev
+stop:
+    -@pkill -f "ng serve" 2>/dev/null || true
+    -@pkill -f "tsx src/index.ts" 2>/dev/null || true
+    -@pkill -f "port-forward svc/storefront-router" 2>/dev/null || true
+    @echo "stopped"

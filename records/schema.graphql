@@ -1,9 +1,0 @@
-type Record @key(fields: "id") {
-  id: ID!
-  title: String!
-  artist: String!
-}
-
-type Query {
-  records: [Record!]!
-}

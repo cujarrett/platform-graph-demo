@@ -1,0 +1,60 @@
+name: spa
+
+on:
+  push:
+    branches: [main]
+    paths: ["spa/**", ".github/workflows/spa.yml"]
+  # Unfiltered, because branch protection requires this job on every PR and a
+  # required check that never runs blocks the merge.
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  spa-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: spa
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  build-and-push:
+    needs: spa-test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: docker/setup-qemu-action@v4
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v7
+        with:
+          context: spa
+          platforms: linux/arm64
+          push: true
+          tags: |
+            ghcr.io/cujarrett/platform-graph-demo-spa:latest
+            ghcr.io/cujarrett/platform-graph-demo-spa:sha-${{ github.sha }}
+
+  deploy:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    uses: cujarrett/homelab-workspaces/.github/workflows/update-image-tag.yml@main
+    with:
+      image: ghcr.io/cujarrett/platform-graph-demo-spa
+      file: platform-graph-demo/graph-demo.yaml
+    secrets:
+      homelab_pat: ${{ secrets.HOMELAB_WORKSPACES_PAT }}

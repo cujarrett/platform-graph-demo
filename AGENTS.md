@@ -1,6 +1,6 @@
 # platform-graph-demo
 
-Two federated GraphQL subgraphs (`records`, `reviews`) demonstrating Apollo Federation on the homelab platform. See [Platform Graph](https://github.com/cujarrett/homelab/blob/main/platform/docs/graph.md) in the `homelab` repo for the full design.
+The page at graph.mattjarrett.dev and the backend behind it. The subgraphs it describes live in their own repos, `storefront-records` and `storefront-reviews`. See [Platform Graph](https://github.com/cujarrett/homelab/blob/main/platform/docs/graph.md) in the `homelab` repo for the full design.
 
 ## Rules
 
@@ -10,7 +10,6 @@ Two federated GraphQL subgraphs (`records`, `reviews`) demonstrating Apollo Fede
 - **Give `git add` and the commit as two separate steps, listing every file explicitly.** Never `git add .` or `git add -A`.
 - **Never output a `git push` command.** The user pushes as a deliberate human step.
 - **No semicolons in JS/TS.** Enforced by Prettier (`semi: false`, root `.prettierrc.json`) and ESLint (`semi: ["error", "never"]`, root `eslint.config.js`). Both subgraphs share these root configs rather than duplicating them.
-- **The platform publishes the schema from the deployed image.** Nothing in this repo runs `rover subgraph publish`. Each image ships its `schema.graphql` at `/schema.graphql`. See [How the schema reaches the registry](https://github.com/cujarrett/homelab/blob/main/platform/docs/graph.md#3-how-the-schema-reaches-the-registry).
 
 ### Pre-commit safety check
 
@@ -23,19 +22,18 @@ Before telling the user to commit, always run `/security-review`. Once it confir
 - **Say no.** No new feature, no new abstraction, until it earns its place.
 - **Cheapest rung that works.** Before writing code go down the ladder and stop at the first rung that solves it - skip the feature, reuse code already here, standard library, native platform feature, a dependency already installed, one line, then build the minimum.
 - **80/20 solutions.** Ugly but working beats elegant but over-engineered.
-- **Two subgraphs, not three.** A third subgraph would teach nothing new about federation that two don't already show.
 - **No FOLD** (Fear Of Looking Dumb). If something is too complex, say so.
 
 ## Layout
 
 ```
-records/    owns the Record type and a Sql binding, once bindings exist
-reviews/    extends Record with reviews, no database
+backend/    an Api: fixed queries against the prod router, GitHub reads for the live rows
+spa/        the walkthrough page, an Angular app in Launchpad's shape
 ```
 
 ## Build tool: `just`, not `make`
 
-`just --list` shows every recipe. `just ci` before pushing. `just dev` composes both subgraphs locally from `supergraph-config.yaml`; `just dev-test` runs one from source with every other schema pulled from the test variant.
+`just --list` shows every recipe. `just ci` before pushing. `just dev` runs the page and backend from source against the prod router.
 
 ## Required secrets (GitHub → repo settings → Secrets)
 

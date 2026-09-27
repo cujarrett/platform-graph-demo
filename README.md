@@ -1,44 +1,25 @@
 # platform-graph-demo
 
-Two GraphQL subgraphs, `records` and `reviews`, federated into one supergraph. `records` owns the `Record` type; `reviews` adds a `reviews` field to it and has never heard of `title` or `artist`. One client query reaches both.
+The walkthrough at [graph.mattjarrett.dev](https://graph.mattjarrett.dev): how a schema change moves from a team's repo to a running federated graph, and two live queries against the prod router.
 
-Full design: [Platform Graph](https://github.com/cujarrett/homelab/blob/main/platform/docs/graph.md) in the `homelab` repo.
+The subgraphs live in their own repos, one team each: [storefront-records](https://github.com/cujarrett/storefront-records) and [storefront-reviews](https://github.com/cujarrett/storefront-reviews). Full design: [Platform Graph](https://github.com/cujarrett/homelab/blob/main/platform/docs/graph.md) in the `homelab` repo.
+
+## Layout
+
+```
+backend/    an Api: fixed queries against the prod router, GitHub reads for the live rows
+spa/        the Angular page, in Launchpad's how-it-works shape
+```
 
 ## Run it locally
 
 ```bash
 just install
-(cd records && npm run dev &)
-(cd reviews && npm run dev &)
-just dev
-```
-
-Then query `http://localhost:4000`:
-
-```graphql
-{
-  records {
-    title
-    artist
-    reviews {
-      rating
-      body
-    }
-  }
-}
+just dev          # page and backend from source, against the prod router
 ```
 
 ## Before opening a PR
 
 ```bash
 just ci
-just check records   # or reviews
 ```
-
-## Promoting to prod
-
-```bash
-just promote records
-```
-
-Opens a PR in `homelab-workspaces` moving the digest running in test into `graph-prod`, after confirming the schema still composes against `storefront-homelab@prod`.

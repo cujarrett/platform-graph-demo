@@ -1,0 +1,395 @@
+/* Design tokens, shared with Launchpad. */
+:root {
+  --color-bg: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-alt: #22263a;
+  --color-border: #2e3347;
+  --color-text: #e2e8f0;
+  --color-text-muted: #8492a6;
+  --color-accent: #6366f1;
+  --color-accent-hover: #4f46e5;
+  --color-accent-text: #a5b4fc;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+
+  /* One colour per subgraph, wherever it appears. */
+  --sub-records: #03a9f4;
+  --sub-reviews: #ff6d00;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  color-scheme: dark;
+  background: var(--color-bg);
+  scroll-behavior: smooth;
+  /* Launchpad's size. The map is sized to a MacBook Pro screen at this. */
+  font-size: 15px;
+}
+
+body {
+  min-height: 100dvh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+a {
+  color: var(--color-accent-text);
+}
+
+.page {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 1.5rem 5rem;
+}
+
+/* The first screen: a short head, then the map filling the rest of the viewport,
+   so the whole walkthrough is visible without scrolling. Run it sits below the fold. */
+.fold {
+  display: flex;
+  flex-direction: column;
+  /* The viewport on a 14" MacBook Pro. On a bigger screen the map is width-bound
+     at 1600px, so more height would only letterbox it. */
+  height: min(100dvh, 64rem);
+  min-height: 0;
+  gap: 0.75rem;
+  padding: 1.25rem 0 1rem;
+}
+.hero {
+  display: flex;
+  flex-direction: column;
+}
+.hero-row {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+.hero h1 {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+.hero app-launchpad-mark {
+  --mark-size: 1.6rem;
+  transform: translateY(0.04em);
+}
+.hero p {
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+.hero a {
+  color: var(--color-text-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--color-border);
+}
+.hero a:hover {
+  color: var(--color-accent-text);
+}
+
+app-topology {
+  display: flex;
+  flex: 1 1 0;
+  min-height: 0;
+}
+/* Below this the rail sits under the map and the page is taller than the
+   viewport, so hand scrolling back to the page. */
+@media (max-width: 1100px), (max-height: 620px) {
+  .fold {
+    height: auto;
+  }
+  app-topology {
+    flex: none;
+  }
+}
+
+/* The map alone hides the queries below the fold, so the fold ends with the way down. */
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 0.25rem;
+  padding: 0.55rem 1rem;
+  border: 1px solid
+    color-mix(in srgb, var(--color-accent) 55%, var(--color-border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  color: var(--color-text);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.cta:hover {
+  border-color: var(--color-accent-text);
+  background: color-mix(in srgb, var(--color-accent) 20%, var(--color-surface));
+}
+.cta-live {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--color-success);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-success) 60%, transparent);
+  animation: pulse 1.8s ease-out infinite;
+  flex: none;
+}
+@keyframes pulse {
+  to {
+    box-shadow: 0 0 0 0.6rem transparent;
+  }
+}
+.cta-go {
+  margin-left: auto;
+  color: var(--color-accent-text);
+  font-size: 1.1rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cta-live {
+    animation: none;
+  }
+}
+
+/* Run it */
+.run {
+  margin-top: 2rem;
+  scroll-margin-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  padding-top: 2rem;
+}
+.run h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+}
+.run-lede {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  max-width: 62ch;
+  margin-top: 0.3rem;
+}
+.run-lede .chip {
+  vertical-align: 0.1em;
+}
+.run-path {
+  margin-top: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--color-text-muted);
+}
+.run-path b {
+  color: var(--color-text);
+  font-weight: 600;
+}
+.run-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+.run-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+  min-width: 0;
+}
+.run-card[data-state='done'] {
+  border-color: color-mix(
+    in srgb,
+    var(--color-accent) 50%,
+    var(--color-border)
+  );
+}
+.run-card h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.run-q,
+.run-out {
+  margin-top: 0.6rem;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 0.85rem;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  overflow-x: auto;
+  white-space: pre;
+}
+/* Muted rather than neon, so the two subgraph colours stay the loudest thing on the card. */
+.j-key {
+  color: #e58fbe;
+}
+.j-str {
+  color: #6fcf97;
+}
+.j-num {
+  color: #a5b4fc;
+}
+.j-lit {
+  color: #f59e0b;
+}
+.run-out.bad {
+  border-color: color-mix(in srgb, var(--color-error) 50%, var(--color-border));
+}
+.run-btn {
+  margin-top: 0.75rem;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  background: var(--color-accent);
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.9rem;
+}
+.run-btn:hover {
+  background: var(--color-accent-hover);
+}
+.run-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+.run-status {
+  margin-top: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  display: flex;
+  gap: 0.75rem;
+}
+.run-status .ok {
+  color: var(--color-success);
+}
+.run-status .bad,
+.run-status.bad {
+  color: var(--color-error);
+}
+.run-h {
+  margin-top: 0.7rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.chips {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+}
+.chip {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  color: var(--color-bg);
+  background: var(--color-text-muted);
+}
+.chip.records {
+  background: var(--sub-records);
+}
+.chip.reviews {
+  background: var(--sub-reviews);
+}
+
+.proof {
+  margin-top: 2rem;
+}
+.proof h3 {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+.proof-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.proof-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.9rem 1rem 1rem;
+  min-width: 0;
+  opacity: 0.7;
+  transition:
+    opacity 0.3s,
+    border-color 0.3s;
+}
+.proof-card.hit {
+  opacity: 1;
+}
+.proof-card.router.hit {
+  border-top-color: var(--color-accent);
+}
+.proof-card.records.hit {
+  border-top-color: var(--sub-records);
+}
+.proof-card.reviews.hit {
+  border-top-color: var(--sub-reviews);
+}
+.proof-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.proof-count {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.chip.router {
+  background: var(--color-accent);
+  color: #fff;
+}
+.proof-card dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 0.9rem;
+  margin-top: 0.8rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+.proof-card dt {
+  color: var(--color-text-muted);
+}
+.proof-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.run-foot {
+  margin-top: 0.75rem;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
