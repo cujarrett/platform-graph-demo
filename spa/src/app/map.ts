@@ -64,6 +64,8 @@ export interface Scenario {
   name: string
   /** The one file the team touched in this scene, coloured line by line. */
   wroteTitle: string
+  /** The real file on GitHub, so the reader can open what the team wrote. */
+  wroteUrl: string
   yaml: [string, 'd' | 'c'][]
   /** The takeaway under it. <b> for what the team did, <em> for what the platform did. */
   take: string
@@ -302,6 +304,8 @@ export const SCENARIOS: Scenario[] = [
     key: 'change',
     name: 'A schema change',
     wroteTitle: 'storefront-records/schema.graphql',
+    wroteUrl:
+      'https://github.com/cujarrett/storefront-records/blob/main/schema.graphql',
     yaml: [
       ['type Record @key(fields: "id") {', 'd'],
       ['  id: ID!', 'd'],
@@ -360,7 +364,9 @@ export const SCENARIOS: Scenario[] = [
   {
     key: 'check',
     name: 'The check',
-    wroteTitle: '.github/workflows/ci.yml',
+    wroteTitle: 'storefront-records/.github/workflows/ci.yml',
+    wroteUrl:
+      'https://github.com/cujarrett/storefront-records/blob/main/.github/workflows/ci.yml',
     yaml: [
       ['schema-check:', 'c'],
       ['  steps:', 'c'],
@@ -433,7 +439,9 @@ export const SCENARIOS: Scenario[] = [
   {
     key: 'merge',
     name: 'Review and merge',
-    wroteTitle: '.github/CODEOWNERS',
+    wroteTitle: 'storefront-records/.github/CODEOWNERS',
+    wroteUrl:
+      'https://github.com/cujarrett/storefront-records/blob/main/.github/CODEOWNERS',
     yaml: [['* @cujarrett', 'd']],
     take: '<b>One line, in the records repo.</b> GitHub asks its owner for review on every change. <em>CI</em> signs the image and writes its digest to git.',
     pattern: `CODEOWNERS, a signed image, and a digest written to git. <a href="${GRAPH_DOC}#2-how-the-schema-reaches-the-registry" target="_blank" rel="noopener">Decision 2</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
@@ -514,7 +522,9 @@ export const SCENARIOS: Scenario[] = [
   {
     key: 'publish',
     name: 'Publish',
-    wroteTitle: 'graph-prod/records.yaml',
+    wroteTitle: 'homelab-workspaces/graph-prod/records.yaml',
+    wroteUrl:
+      'https://github.com/cujarrett/homelab-workspaces/blob/main/graph-prod/records.yaml',
     yaml: [
       ['kind: GraphApi', 'c'],
       ['metadata:', 'c'],
@@ -616,7 +626,9 @@ export const SCENARIOS: Scenario[] = [
   {
     key: 'serve',
     name: 'Serve',
-    wroteTitle: 'graph-prod/storefront.yaml',
+    wroteTitle: 'homelab-workspaces/graph-prod/storefront.yaml',
+    wroteUrl:
+      'https://github.com/cujarrett/homelab-workspaces/blob/main/graph-prod/storefront.yaml',
     yaml: [
       ['kind: FederatedGraph', 'c'],
       ['metadata:', 'c'],

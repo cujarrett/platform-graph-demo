@@ -123,7 +123,16 @@ const KIND_FILL: Record<string, string> = {
 
       <div class="topo-strip">
         <div class="topo-card">
-          <h3>What the team wrote · {{ scenario().wroteTitle }}</h3>
+          <h3>
+            What the team wrote ·
+            <a
+              class="topo-file"
+              [href]="scenario().wroteUrl"
+              target="_blank"
+              rel="noopener"
+              >{{ scenario().wroteTitle }} ↗</a
+            >
+          </h3>
           <pre class="topo-yaml"><code [innerHTML]="yaml()"></code></pre>
           <p class="topo-take" [innerHTML]="html(scenario().take)"></p>
           <p class="topo-foot" [innerHTML]="html(scenario().pattern)"></p>
@@ -486,6 +495,16 @@ const KIND_FILL: Record<string, string> = {
       .topo-foot b {
         color: var(--topo-built);
         font-weight: 600;
+      }
+      .topo-file {
+        color: var(--topo-declared);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+        text-decoration-color: var(--color-border);
+        text-transform: none;
+        letter-spacing: 0;
+        font-family: var(--font-mono);
+        overflow-wrap: anywhere;
       }
       .topo-foot a {
         color: var(--color-accent-text);
