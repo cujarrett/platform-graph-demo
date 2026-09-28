@@ -71,17 +71,17 @@ interface Run {
             </button>
 
             @if (runs()[q.name]; as r) {
-              @if (r.state === 'running') {
+              @if (r.state === 'running' && !r.answer) {
                 <p class="run-status">calling the router…</p>
               }
               @if (r.state === 'failed') {
                 <p class="run-status bad">{{ r.error }}</p>
               }
-              @if (r.state === 'done' && r.answer; as a) {
+              @if (r.state !== 'failed' && r.answer; as a) {
                 <p class="run-status">
-                  <span [class.ok]="!a.errors" [class.bad]="!!a.errors"
-                    >HTTP {{ a.status }}</span
-                  >
+                  <span [class.ok]="!a.errors" [class.bad]="!!a.errors">{{
+                    r.state === 'running' ? 'calling…' : 'HTTP ' + a.status
+                  }}</span>
                   <span class="ms">{{ a.ms }} ms at the router</span>
                   @if (a.cached) {
                     <span class="ms"
@@ -253,7 +253,9 @@ export class RunIt {
   }
 
   async run(name: string): Promise<void> {
-    this.patch(name, { state: 'running' })
+    // The last answer stays up while the next one is in flight, so the card
+    // never collapses and the page does not jump.
+    this.patch(name, { state: 'running', answer: this.runs()[name]?.answer })
     try {
       const res = await fetch(`/api/v1/queries/${name}`, { cache: 'no-store' })
       const body = await res.json()
