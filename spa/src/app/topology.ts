@@ -670,13 +670,21 @@ export class Topology implements AfterViewInit, OnDestroy {
   protected readonly current = computed(
     () => this.scenario().steps[this.step()],
   )
-  protected readonly playLabel = computed(() =>
-    this.playing()
-      ? 'Pause'
-      : this.step() === this.scenario().steps.length - 1
-        ? 'Replay'
-        : 'Play',
+  // The last step of every flow but the final one hands on to the next flow.
+  // Restart already covers replaying this one.
+  private readonly nextFlow = computed(() =>
+    !this.playing() &&
+    this.step() === this.scenario().steps.length - 1 &&
+    this.si() < SCENARIOS.length - 1
+      ? this.si() + 1
+      : null,
   )
+  protected readonly playLabel = computed(() => {
+    const n = this.nextFlow()
+    if (n !== null) return `Next: ${SCENARIOS[n].name}`
+    if (this.playing()) return 'Pause'
+    return this.step() === this.scenario().steps.length - 1 ? 'Replay' : 'Play'
+  })
   protected readonly yaml = computed(() =>
     this.sanitizer.bypassSecurityTrustHtml(
       this.scenario()
@@ -761,7 +769,8 @@ export class Topology implements AfterViewInit, OnDestroy {
     this.playing.set(false)
   }
 
-  // Left and right page through the current flow's steps and stop at either end.
+  // Left and right page through the current flow's steps.
+  // Right on the last step moves to the next flow.
   protected onKey(e: KeyboardEvent): void {
     if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
@@ -775,9 +784,14 @@ export class Topology implements AfterViewInit, OnDestroy {
 
     const next = this.step() + (e.key === 'ArrowRight' ? 1 : -1)
     if (next >= 0 && next < this.scenario().steps.length) this.jump(next)
+    else if (e.key === 'ArrowRight' && this.si() < SCENARIOS.length - 1) {
+      this.pick(this.si() + 1)
+    }
   }
 
   protected toggle(): void {
+    const n = this.nextFlow()
+    if (n !== null) return this.pick(n)
     if (!this.playing() && this.step() === this.scenario().steps.length - 1)
       this.step.set(0)
     this.playing.update((p) => !p)
