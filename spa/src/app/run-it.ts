@@ -37,18 +37,25 @@ interface Run {
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="run" id="run-it">
-      <h2>Run it</h2>
+      <h2><span class="live-dot"></span>Live</h2>
       <p class="run-lede">
-        Each button sends one fixed query to the Apollo router running in
-        <code>graph-prod</code> on this cluster. The plan shows which of the
-        <span class="chip records">records</span> and
-        <span class="chip reviews">reviews</span>
-        pods answered each field.
+        Real queries. Real Apollo router. Real Kubernetes, on four Raspberry
+        Pis.
       </p>
-      <p class="run-path">
-        this page → its backend → <b>storefront-router</b> → <b>records</b> ·
-        <b>reviews</b>
-      </p>
+
+      <ol class="path">
+        <li><span class="hop">your browser</span></li>
+        <li><span class="hop">demo backend</span></li>
+        <li>
+          <span class="hop router">Apollo router</span
+          ><span class="where">graph-prod</span>
+        </li>
+        <li class="split">
+          <span class="hop records">records</span
+          ><span class="hop reviews">reviews</span>
+          <span class="where">one pod each</span>
+        </li>
+      </ol>
 
       <div class="run-grid">
         @for (q of queries(); track q.name) {
@@ -98,8 +105,12 @@ interface Run {
                       }
                     </div>
                     @if (a.plan.text) {
-                      <div class="run-h">query plan</div>
-                      <pre class="run-out"><code>{{ a.plan.text }}</code></pre>
+                      <details class="run-more">
+                        <summary>query plan, from the router</summary>
+                        <pre
+                          class="run-out"
+                        ><code>{{ a.plan.text }}</code></pre>
+                      </details>
                     }
                   </div>
                 }
@@ -110,10 +121,12 @@ interface Run {
                   ><code [innerHTML]="pretty(a.errors)"></code></pre>
                 }
                 @if (a.data) {
-                  <div class="run-h">data</div>
-                  <pre
-                    class="run-out"
-                  ><code [innerHTML]="pretty(a.data)"></code></pre>
+                  <details class="run-more">
+                    <summary>data</summary>
+                    <pre
+                      class="run-out"
+                    ><code [innerHTML]="pretty(a.data)"></code></pre>
+                  </details>
                 }
               }
             }
@@ -123,11 +136,6 @@ interface Run {
 
       <div class="proof">
         <h3>What answered</h3>
-        <p class="run-lede">
-          One card per thing your queries touched. Each subgraph runs the digest
-          its prod file names, and that digest is what the operator published
-          its schema from.
-        </p>
         <div class="proof-grid">
           <article class="proof-card router" [class.hit]="served() > 0">
             <div class="proof-h">

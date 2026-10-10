@@ -10,41 +10,39 @@ import type { Lane } from './map'
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="page">
-      <div class="fold">
-        <header class="hero">
-          <div class="hero-row">
-            <h1>
-              <app-launchpad-mark [animate]="true" />Platform Engineering: Graph
-            </h1>
-            <p>
-              A working schema pipeline, end to end, on
-              <a
-                href="https://blog.mattjarrett.dev/homelab/"
-                target="_blank"
-                rel="noopener"
-                >my bookshelf Kubernetes cluster</a
-              >.
-              <a
-                href="https://github.com/cujarrett/homelab/blob/main/docs/nothing-novel.md"
-                target="_blank"
-                rel="noopener"
-                >Nothing here is novel</a
-              >.
-            </p>
-          </div>
-        </header>
-
-        <app-topology />
-
-        <a class="cta" href="#run-it">
-          <span class="cta-live"></span>
-          Everything on this map is running. Send two real queries through the
-          router and see both subgraphs answer.
-          <span class="cta-go">↓</span>
-        </a>
-      </div>
+      <header class="hero">
+        <div class="hero-row">
+          <h1>
+            <app-launchpad-mark [animate]="true" />Platform Engineering: Graph
+          </h1>
+          <p>
+            A working schema pipeline, end to end, on
+            <a
+              href="https://blog.mattjarrett.dev/homelab/"
+              target="_blank"
+              rel="noopener"
+              >my bookshelf Kubernetes cluster</a
+            >.
+            <a
+              href="https://github.com/cujarrett/homelab/blob/main/docs/nothing-novel.md"
+              target="_blank"
+              rel="noopener"
+              >Nothing here is novel</a
+            >.
+          </p>
+        </div>
+      </header>
 
       <app-run-it [lane]="lane()" [laneError]="laneError()" />
+
+      <section class="how" id="how-it-works">
+        <h2>How it works</h2>
+        <p class="how-lede">
+          The path a schema change takes from a team's repo to the router you
+          just queried.
+        </p>
+        <app-topology />
+      </section>
     </div>
   `,
 })
