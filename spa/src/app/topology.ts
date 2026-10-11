@@ -1313,12 +1313,16 @@ export class Topology implements AfterViewInit, OnDestroy {
 
     if (this.playing() && f >= 1) {
       this.zone.run(() => {
+        // Plays on through every flow once, then stops on the last step.
         if (this.step() < steps.length - 1) {
           this.step.update((s) => s + 1)
-          this.startedAt = now
+        } else if (this.si() < SCENARIOS.length - 1) {
+          this.si.update((i) => i + 1)
+          this.step.set(0)
         } else {
           this.playing.set(false)
         }
+        this.startedAt = now
       })
     }
     this.raf = requestAnimationFrame((t) => this.frame(t))
