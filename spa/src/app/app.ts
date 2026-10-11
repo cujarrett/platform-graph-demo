@@ -20,6 +20,15 @@ import type { Lane } from './map'
         <app-topology />
       </section>
     </div>
+    <footer class="app-footer">
+      <a
+        href="https://blog.mattjarrett.dev/platform/"
+        target="_blank"
+        rel="noopener noreferrer"
+        >Made by Matt Jarrett</a
+      >
+      with ♥ and Kubernetes
+    </footer>
   `,
 })
 export class App {
