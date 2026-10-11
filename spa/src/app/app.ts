@@ -22,7 +22,7 @@ import type { Lane } from './map'
     </div>
     <footer class="app-footer">
       <a
-        href="https://blog.mattjarrett.dev/platform/"
+        href="https://mattjarrett.dev"
         target="_blank"
         rel="noopener noreferrer"
         >Made by Matt Jarrett</a
