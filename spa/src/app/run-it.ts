@@ -36,7 +36,7 @@ interface Answer {
           <p class="live-sub">
             A federated GraphQL graph, live on
             <a
-              href="https://blog.mattjarrett.dev/homelab/"
+              href="https://blog.mattjarrett.dev/platform/"
               target="_blank"
               rel="noopener"
               >my bookshelf Kubernetes cluster</a
