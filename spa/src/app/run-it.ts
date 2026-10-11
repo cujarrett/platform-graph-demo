@@ -241,6 +241,9 @@ export class RunIt {
   async run(): Promise<void> {
     this.state.set('running')
     this.error.set('')
+    // Cleared first, so every answer on screen visibly arrives from this call.
+    this.answer.set(null)
+    this.totalMs.set(0)
     this.lit.set(1)
     const started = performance.now()
     try {
