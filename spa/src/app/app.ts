@@ -1,38 +1,14 @@
 import { ChangeDetectionStrategy, Component, signal } from '@angular/core'
-import { LaunchpadMark } from './launchpad-mark'
 import { RunIt } from './run-it'
 import { Topology } from './topology'
 import type { Lane } from './map'
 
 @Component({
   selector: 'app-root',
-  imports: [LaunchpadMark, Topology, RunIt],
+  imports: [Topology, RunIt],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="page">
-      <header class="hero">
-        <div class="hero-row">
-          <h1>
-            <app-launchpad-mark [animate]="true" />Platform Engineering: Graph
-          </h1>
-          <p>
-            A working schema pipeline, end to end, on
-            <a
-              href="https://blog.mattjarrett.dev/homelab/"
-              target="_blank"
-              rel="noopener"
-              >my bookshelf Kubernetes cluster</a
-            >.
-            <a
-              href="https://github.com/cujarrett/homelab/blob/main/docs/nothing-novel.md"
-              target="_blank"
-              rel="noopener"
-              >Nothing here is novel</a
-            >.
-          </p>
-        </div>
-      </header>
-
       <app-run-it [lane]="lane()" [laneError]="laneError()" />
 
       <section class="how" id="how-it-works">

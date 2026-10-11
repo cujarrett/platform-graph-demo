@@ -1,4 +1,5 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   inject,
@@ -6,14 +7,9 @@ import {
   signal,
 } from '@angular/core'
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser'
-import { highlightJson } from './json-highlight'
+import { compactJson, highlightJson } from './json-highlight'
+import { LaunchpadMark } from './launchpad-mark'
 import type { Lane } from './map'
-
-interface QueryInfo {
-  name: string
-  title: string
-  query: string
-}
 
 interface Answer {
   status: number
@@ -25,180 +21,145 @@ interface Answer {
   cached?: boolean
 }
 
-interface Run {
-  state: 'idle' | 'running' | 'done' | 'failed'
-  answer?: Answer
-  error?: string
-}
-
-/** One card per fixed query. The backend holds the queries; the page only names one. */
+/** One fixed query, sent through the real router. The backend holds the query; the page only names it. */
 @Component({
   selector: 'app-run-it',
+  imports: [LaunchpadMark],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="run" id="run-it">
-      <h2><span class="live-dot"></span>Live</h2>
-      <p class="run-lede">
-        Real queries. Real Apollo router. Real Kubernetes, on four Raspberry
-        Pis.
-      </p>
+      <div class="live-grid">
+        <div class="live-left">
+          <h1 class="live-h">
+            <app-launchpad-mark [animate]="true" />Working POC: Platform Graph
+          </h1>
+          <p class="live-sub">
+            A federated GraphQL graph, live on
+            <a
+              href="https://blog.mattjarrett.dev/homelab/"
+              target="_blank"
+              rel="noopener"
+              >my bookshelf Kubernetes cluster</a
+            >.
+            <a
+              href="https://github.com/cujarrett/homelab/blob/main/docs/nothing-novel.md"
+              target="_blank"
+              rel="noopener"
+              >Nothing here is novel</a
+            >.
+          </p>
 
-      <ol class="path">
-        <li><span class="hop">your browser</span></li>
-        <li><span class="hop">demo backend</span></li>
-        <li>
-          <span class="hop router">Apollo router</span
-          ><span class="where">graph-prod</span>
-        </li>
-        <li class="split">
-          <span class="hop records">records</span
-          ><span class="hop reviews">reviews</span>
-          <span class="where">one pod each</span>
-        </li>
-      </ol>
-
-      <div class="run-grid">
-        @for (q of queries(); track q.name) {
-          <article
-            class="run-card"
-            [attr.data-state]="runs()[q.name]?.state ?? 'idle'"
-          >
-            <h3>{{ q.title }}</h3>
-            <pre class="run-q"><code>{{ q.query }}</code></pre>
+          <div class="send">
             <button
               class="run-btn"
-              (click)="run(q.name)"
-              [disabled]="runs()[q.name]?.state === 'running'"
+              (click)="run()"
+              [disabled]="state() === 'running'"
             >
-              {{
-                runs()[q.name]?.state === 'idle' || !runs()[q.name]
-                  ? '▶  Run'
-                  : 'Run again'
-              }}
+              {{ state() === 'running' ? 'Sending…' : '▶  Send it again' }}
             </button>
+          </div>
 
-            @if (runs()[q.name]; as r) {
-              @if (r.state === 'running' && !r.answer) {
-                <p class="run-status">calling the router…</p>
-              }
-              @if (r.state === 'failed') {
-                <p class="run-status bad">{{ r.error }}</p>
-              }
-              @if (r.state !== 'failed' && r.answer; as a) {
-                <p class="run-status">
-                  <span [class.ok]="!a.errors" [class.bad]="!!a.errors">{{
-                    r.state === 'running' ? 'calling…' : 'HTTP ' + a.status
-                  }}</span>
-                  <span class="ms">{{ a.ms }} ms at the router</span>
-                  @if (a.cached) {
-                    <span class="ms"
-                      >last answer, the router is being spared</span
-                    >
-                  }
-                </p>
-                @if (a.plan) {
-                  <div class="run-plan">
-                    <div class="run-h">answered by</div>
-                    <div class="chips">
-                      @for (s of a.plan.subgraphs; track s) {
-                        <span class="chip {{ s }}">{{ s }}</span>
-                      }
-                    </div>
-                    @if (a.plan.text) {
-                      <details class="run-more">
-                        <summary>query plan, from the router</summary>
-                        <pre
-                          class="run-out"
-                        ><code>{{ a.plan.text }}</code></pre>
-                      </details>
-                    }
-                  </div>
-                }
-                @if (a.errors) {
-                  <div class="run-h">the router said</div>
-                  <pre
-                    class="run-out bad"
-                  ><code [innerHTML]="pretty(a.errors)"></code></pre>
-                }
-                @if (a.data) {
-                  <details class="run-more">
-                    <summary>data</summary>
-                    <pre
-                      class="run-out"
-                    ><code [innerHTML]="pretty(a.data)"></code></pre>
-                  </details>
-                }
-              }
-            }
-          </article>
-        }
-      </div>
-
-      <div class="proof">
-        <h3>What answered</h3>
-        <div class="proof-grid">
-          <article class="proof-card router" [class.hit]="served() > 0">
-            <div class="proof-h">
-              <span class="chip router">router</span>
-              <span class="proof-count">{{ served() }} served</span>
-            </div>
-            <dl>
-              <dt>service</dt>
-              <dd>storefront-router.graph-prod</dd>
-              <dt>variant</dt>
-              <dd>
-                <a
-                  href="https://studio.apollographql.com/graph/storefront-homelab/variant/prod/launches"
-                  target="_blank"
-                  rel="noopener"
-                  >storefront-homelab&#64;prod</a
-                >
-              </dd>
-              <dt>rendered from</dt>
-              <dd>
+          <ol class="flow" [attr.data-state]="state()">
+            <li [class.lit]="lit() >= 1">
+              <span class="hop">your browser</span>
+              <span class="facts">{{
+                totalMs() ? totalMs() + ' ms round trip' : 'this page'
+              }}</span>
+            </li>
+            <li [class.lit]="lit() >= 2">
+              <span class="hop">demo backend</span>
+              <span class="facts">sends one fixed query, nothing else</span>
+            </li>
+            <li [class.lit]="lit() >= 3">
+              <span class="hop router">Apollo router</span>
+              <span class="facts">
                 <a
                   href="https://github.com/cujarrett/homelab-workspaces/blob/main/graph-prod/storefront.yaml"
                   target="_blank"
                   rel="noopener"
-                  >graph-prod/storefront.yaml</a
+                  >storefront-router.graph-prod</a
                 >
-              </dd>
-            </dl>
-          </article>
-          @for (s of subgraphNames(); track s) {
-            <article class="proof-card {{ s }}" [class.hit]="answered(s) > 0">
-              <div class="proof-h">
-                <span class="chip {{ s }}">{{ s }}</span>
-                <span class="proof-count">{{ answered(s) }} answered</span>
-              </div>
-              @if (lane(); as l) {
-                <dl>
-                  <dt>running</dt>
-                  <dd>
+                <span>storefront-homelab&#64;prod</span>
+              </span>
+            </li>
+            @for (s of subgraphNames(); track s) {
+              <li [class.lit]="lit() >= 4 && answered(s)" class="sub">
+                <a
+                  class="hop {{ s }}"
+                  [href]="'https://github.com/cujarrett/storefront-' + s"
+                  target="_blank"
+                  rel="noopener"
+                  [title]="'storefront-' + s + ' on GitHub'"
+                  >{{ s }} ↗</a
+                >
+                <span class="facts">
+                  <span class="did {{ s }}">{{ did(s) }}</span>
+                  <span>pod {{ s }}.graph-prod</span>
+                  @if (lane(); as l) {
                     <a
                       [href]="l.subgraphs[s].lanes['prod'].url"
                       target="_blank"
                       rel="noopener"
-                      >{{ short(l.subgraphs[s].lanes['prod'].image) }}</a
+                      >image {{ short(l.subgraphs[s].lanes['prod'].image) }}</a
                     >
-                  </dd>
-                  <dt>schema changed</dt>
-                  <dd>
                     @if (l.subgraphs[s].schemaCommit; as c) {
-                      <a [href]="c.url" target="_blank" rel="noopener">{{
-                        c.sha.slice(0, 7)
-                      }}</a>
-                      · {{ c.date.slice(0, 10) }}
+                      <a [href]="c.url" target="_blank" rel="noopener"
+                        >schema {{ c.sha.slice(0, 7) }} ·
+                        {{ c.date.slice(0, 10) }}</a
+                      >
                     }
-                  </dd>
-                  <dt>pod</dt>
-                  <dd>{{ s }}.graph-prod</dd>
-                </dl>
-              } @else {
-                <p class="run-foot">{{ laneError() || 'reading GitHub…' }}</p>
-              }
-            </article>
+                  } @else if (laneError()) {
+                    <span>{{ laneError() }}</span>
+                  }
+                </span>
+              </li>
+            }
+          </ol>
+
+          @if (error()) {
+            <p class="run-status bad">{{ error() }}</p>
           }
+        </div>
+
+        <div class="response">
+          @if (story(); as st) {
+            <p class="story">{{ st }}</p>
+          }
+          <div class="rr">
+            <div class="rr-col">
+              <h4>request</h4>
+              <pre class="gql"><code>{{ '{' }}
+  <span class="q records">records</span> {{ '{' }}
+    <span class="q records">title</span>
+    <span class="q records">artist</span>
+    <span class="q reviews">reviews</span> {{ '{' }}
+      <span class="q reviews">rating</span>
+      <span class="q reviews">body</span>
+    {{ '}' }}
+  {{ '}' }}
+{{ '}' }}</code></pre>
+            </div>
+            <div class="rr-col">
+              <h4>
+                response
+                @if (answer(); as a) {
+                  <span class="status" [class.bad]="a.status !== 200"
+                    >HTTP {{ a.status }} · {{ a.ranAt.slice(11, 19) }} UTC</span
+                  >
+                  @if (a.cached) {
+                    <span class="status bad">rate limited, last answer</span>
+                  }
+                }
+              </h4>
+              @if (answer(); as a) {
+                <pre
+                  class="response-body"
+                ><code [innerHTML]="pretty(a.errors ? { errors: a.errors } : { data: a.data })"></code></pre>
+              } @else {
+                <p class="response-empty">waiting for the router…</p>
+              }
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -208,26 +169,52 @@ export class RunIt {
   readonly lane = input<Lane | null>(null)
   readonly laneError = input<string>('')
 
-  // The same two the backend holds, so the cards render before, or without, its answer.
-  readonly queries = signal<QueryInfo[]>([
-    {
-      name: 'records',
-      title: 'One subgraph',
-      query: '{ records { title artist } }',
-    },
-    {
-      name: 'federated',
-      title: 'Both subgraphs, one query',
-      query: '{ records { title artist reviews { rating body } } }',
-    },
-  ])
-  readonly runs = signal<Record<string, Run>>({})
+  readonly state = signal<'idle' | 'running' | 'done'>('idle')
+  readonly answer = signal<Answer | null>(null)
+  readonly error = signal('')
+  readonly totalMs = signal(0)
+  // How many hops are lit. The reveal is paced for the eye; every number shown is measured.
+  readonly lit = signal(0)
 
+  // The page arrives with a real answer. Past the budget the backend serves its last one.
   constructor() {
-    fetch('/api/v1/queries')
-      .then((r) => r.json())
-      .then((qs: QueryInfo[]) => this.queries.set(qs))
-      .catch(() => undefined)
+    afterNextRender(() => void this.run())
+  }
+
+  /** The fixed query's shape. Title and artist come from records, reviews from reviews. */
+  records(): {
+    title: string
+    artist: string
+    reviews: { rating: number; body: string }[]
+  }[] {
+    const d = this.answer()?.data as { records?: unknown[] } | null
+    return (d?.records ?? []) as {
+      title: string
+      artist: string
+      reviews: { rating: number; body: string }[]
+    }[]
+  }
+
+  /** One sentence from the real answer, so the visitor knows what just happened. */
+  story(): string {
+    const a = this.answer()
+    if (!a || a.errors) return ''
+    const recs = this.records()
+    const reviews = recs.reduce((n, r) => n + (r.reviews?.length ?? 0), 0)
+    const both = (a.plan?.subgraphs.length ?? 0) > 1
+    return both
+      ? `The router asked records for ${recs.length} albums, then reviews for their ${reviews} reviews, and joined them into one answer in ${a.ms} ms.`
+      : `The router answered from records alone in ${a.ms} ms.`
+  }
+
+  /** What this subgraph contributed to the last answer, counted from the answer itself. */
+  did(name: string): string {
+    if (this.lit() < 4) return 'its own pod'
+    if (!this.answered(name)) return 'not needed'
+    const recs = this.records()
+    if (name === 'records') return `answered ${recs.length} albums`
+    const n = recs.reduce((t, r) => t + (r.reviews?.length ?? 0), 0)
+    return `answered ${n} reviews`
   }
 
   subgraphNames(): string[] {
@@ -235,15 +222,8 @@ export class RunIt {
     return l ? Object.keys(l.subgraphs) : ['records', 'reviews']
   }
 
-  /** Runs whose plan named this subgraph. Only the plan knows, so it is 0 until one arrives. */
-  answered(name: string): number {
-    return Object.values(this.runs()).filter(
-      (r) => r.state === 'done' && r.answer?.plan?.subgraphs.includes(name),
-    ).length
-  }
-
-  served(): number {
-    return Object.values(this.runs()).filter((r) => r.state === 'done').length
+  answered(name: string): boolean {
+    return !!this.answer()?.plan?.subgraphs.includes(name)
   }
 
   short(image: string | null): string {
@@ -255,35 +235,34 @@ export class RunIt {
   private readonly sanitizer = inject(DomSanitizer)
 
   pretty(v: unknown): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(
-      highlightJson(JSON.stringify(v, null, 2)),
-    )
+    return this.sanitizer.bypassSecurityTrustHtml(highlightJson(compactJson(v)))
   }
 
-  async run(name: string): Promise<void> {
-    // The last answer stays up while the next one is in flight, so the card
-    // never collapses and the page does not jump.
-    this.patch(name, { state: 'running', answer: this.runs()[name]?.answer })
+  async run(): Promise<void> {
+    this.state.set('running')
+    this.error.set('')
+    this.lit.set(1)
+    const started = performance.now()
     try {
-      const res = await fetch(`/api/v1/queries/${name}`, { cache: 'no-store' })
+      const res = await fetch('/api/v1/queries/federated', {
+        cache: 'no-store',
+      })
       const body = await res.json()
+      this.totalMs.set(Math.round(performance.now() - started))
       if (!res.ok) {
-        this.patch(name, {
-          state: 'failed',
-          error: body.error ?? `HTTP ${res.status}`,
-        })
+        // The backend's own error text is for logs, not visitors.
+        this.error.set('The router did not answer. Try again in a moment.')
+        this.state.set('done')
         return
       }
-      this.patch(name, { state: 'done', answer: body as Answer })
+      this.answer.set(body as Answer)
+      for (const step of [2, 3, 4]) {
+        await new Promise((r) => setTimeout(r, 220))
+        this.lit.set(step)
+      }
     } catch {
-      this.patch(name, {
-        state: 'failed',
-        error: 'no response from the backend',
-      })
+      this.error.set('The demo backend did not answer. Try again in a moment.')
     }
-  }
-
-  private patch(name: string, run: Run): void {
-    this.runs.update((all) => ({ ...all, [name]: run }))
+    this.state.set('done')
   }
 }

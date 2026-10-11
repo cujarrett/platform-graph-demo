@@ -130,58 +130,89 @@ app-topology {
   }
 }
 
+.live-h {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+}
+.story {
+  margin-top: 1.1rem;
+  max-width: 40rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 8%, transparent);
+  border-radius: var(--radius-sm);
+}
+
+/* Live: the request on the left, its real response on the right, at the same height. */
+.live-grid {
+  display: grid;
+  grid-template-columns: max-content minmax(24rem, 1fr);
+  gap: 2rem;
+  align-items: stretch;
+}
+@media (max-width: 1100px) {
+  .live-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.response {
+  display: flex;
+  flex-direction: column;
+  /* Sized by the left column, so a long answer scrolls inside instead of growing the row. */
+  contain: size;
+  min-height: 22rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.response-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.response-body.bad {
+  color: var(--color-error);
+}
+.response-empty {
+  margin: auto;
+  padding: 1rem;
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
 /* Live */
 .run h2 {
   display: flex;
   align-items: center;
   gap: 0.6rem;
 }
-.live-dot {
-  width: 0.65rem;
-  height: 0.65rem;
-  border-radius: 50%;
-  background: var(--color-success);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-success) 60%, transparent);
-  animation: pulse 1.8s ease-out infinite;
-}
-@keyframes pulse {
-  to {
-    box-shadow: 0 0 0 0.6rem transparent;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .live-dot {
-    animation: none;
-  }
-}
-.path {
-  list-style: none;
+.send {
   display: flex;
+  align-items: center;
   flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 0.5rem 0;
+  gap: 0.75rem;
   margin-top: 1rem;
 }
-.path li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
+.send .run-btn {
+  margin-top: 0;
+  font-size: 0.95rem;
+  padding: 0.55rem 1.1rem;
 }
-.path li + li::before {
-  content: '→';
-  position: relative;
-  top: 0.35rem;
-  margin: 0 0.75rem;
-  color: var(--color-text-muted);
-}
-.path li + li {
-  flex-direction: row;
-  align-items: flex-start;
-}
-.path .split {
-  flex-wrap: wrap;
-  gap: 0.4rem;
+.answer {
+  margin-top: 0.5rem;
+  max-width: 60rem;
 }
 .hop {
   font-family: var(--font-mono);
@@ -366,77 +397,223 @@ app-topology {
 .chip.reviews {
   background: var(--sub-reviews);
 }
-
-.proof {
-  margin-top: 2rem;
-}
-.proof h3 {
-  font-size: 1.05rem;
-  font-weight: 600;
-}
-.proof-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 1rem;
-  margin-top: 1rem;
-}
-.proof-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-top: 3px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: 0.9rem 1rem 1rem;
-  min-width: 0;
-  opacity: 0.7;
-  transition:
-    opacity 0.3s,
-    border-color 0.3s;
-}
-.proof-card.hit {
-  opacity: 1;
-}
-.proof-card.router.hit {
-  border-top-color: var(--color-accent);
-}
-.proof-card.records.hit {
-  border-top-color: var(--sub-records);
-}
-.proof-card.reviews.hit {
-  border-top-color: var(--sub-reviews);
-}
-.proof-h {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-.proof-count {
-  font-family: var(--font-mono);
-  font-size: 0.7rem;
-  color: var(--color-text-muted);
-  font-variant-numeric: tabular-nums;
-}
 .chip.router {
   background: var(--color-accent);
   color: #fff;
-}
-.proof-card dl {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 0.35rem 0.9rem;
-  margin-top: 0.8rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-}
-.proof-card dt {
-  color: var(--color-text-muted);
-}
-.proof-card dd {
-  margin: 0;
-  overflow-wrap: anywhere;
 }
 .run-foot {
   margin-top: 0.75rem;
   font-size: 0.72rem;
   color: var(--color-text-muted);
+}
+
+/* The request's path, one row per hop, each with the facts that prove it is real. */
+.flow {
+  list-style: none;
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+.flow li {
+  position: relative;
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  align-items: center;
+  gap: 1rem;
+  opacity: 0.45;
+  transition: opacity 0.3s;
+}
+.flow[data-state='idle'] li,
+.flow li.lit {
+  opacity: 1;
+}
+.flow li + li::before {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  top: -0.7rem;
+  height: 0.7rem;
+  border-left: 1px solid var(--color-border);
+}
+.flow li.sub {
+  margin-left: 1.5rem;
+  grid-template-columns: 7.5rem minmax(0, 1fr);
+}
+.flow .hop {
+  text-align: center;
+}
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+.facts a {
+  color: var(--color-text-muted);
+}
+.did.records {
+  color: var(--sub-records);
+}
+.did.reviews {
+  color: var(--sub-reviews);
+}
+
+.response-h {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem 1rem;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--color-border);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+.response-h .bad {
+  color: var(--color-error);
+}
+.response h4 {
+  padding: 0.6rem 0.9rem 0;
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.gql {
+  margin: 0;
+  padding: 0.3rem 0.9rem 0.6rem;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}
+.q.records {
+  color: var(--sub-records);
+}
+.q.reviews {
+  color: var(--sub-reviews);
+}
+.rr {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+.rr-col {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.rr-col + .rr-col {
+  border-left: 1px solid var(--color-border);
+}
+
+/* Live section at reading size. Overrides above keep the base rules shared. */
+.live-grid {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 2.5rem;
+}
+.live-h {
+  font-size: 2rem;
+}
+.send .run-btn {
+  font-size: 1.05rem;
+  padding: 0.7rem 1.4rem;
+}
+.flow {
+  margin-top: 1.75rem;
+  gap: 0.9rem;
+}
+.flow li {
+  grid-template-columns: 10.5rem minmax(0, 1fr);
+}
+.flow li.sub {
+  grid-template-columns: 9rem minmax(0, 1fr);
+}
+.flow li + li::before {
+  top: -0.9rem;
+  height: 0.9rem;
+}
+.flow .hop {
+  font-size: 0.95rem;
+  padding: 0.5rem 0.9rem;
+}
+.facts {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  gap: 0.2rem 1.25rem;
+  color: var(--color-text);
+}
+.facts a {
+  color: var(--color-text-muted);
+  text-decoration: none;
+}
+.facts a:hover {
+  color: var(--color-text);
+  text-decoration: underline;
+}
+.story {
+  font-size: 1.1rem;
+  margin-top: 1.5rem;
+}
+.response {
+  min-height: 26rem;
+}
+.response-h {
+  font-size: 0.85rem;
+  padding: 0.8rem 1.1rem;
+}
+.response h4 {
+  font-size: 0.72rem;
+  padding: 0.8rem 1.1rem 0;
+}
+.gql,
+.response .response-body {
+  font-size: 0.88rem;
+  line-height: 1.6;
+  padding-left: 1.1rem;
+  padding-right: 1.1rem;
+}
+@media (max-width: 1100px) {
+  .live-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.live-h app-launchpad-mark {
+  --mark-size: 2.4rem;
+}
+.live-sub {
+  margin-top: 0.4rem;
+  font-size: 1.05rem;
+  color: var(--color-text-muted);
+}
+.live-sub a {
+  color: var(--color-text);
+}
+.response .story {
+  margin: 0;
+  max-width: none;
+  border-radius: 0;
+  border-left-width: 3px;
+  font-size: 1rem;
+}
+.response .response-body {
+  line-height: 1.45;
+}
+.response h4 .status {
+  margin-left: 0.6rem;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 400;
+  font-family: var(--font-mono);
+}
+.response h4 .status.bad {
+  color: var(--color-error);
+}
+a.hop {
+  text-decoration: none;
+}
+a.hop:hover {
+  background: color-mix(in srgb, currentColor 12%, var(--color-surface));
 }

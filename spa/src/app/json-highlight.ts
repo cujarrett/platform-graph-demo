@@ -20,3 +20,55 @@ export function highlightJson(pretty: string): string {
     },
   )
 }
+
+const WIDTH = 60
+
+/** One-line JSON with a space after each colon and comma, and inside braces. */
+const flat = (v: unknown): string => {
+  if (Array.isArray(v)) return `[${v.map(flat).join(', ')}]`
+  if (v && typeof v === 'object') {
+    const rows = Object.entries(v).map(
+      ([k, x]) => `${JSON.stringify(k)}: ${flat(x)}`,
+    )
+    return `{ ${rows.join(', ')} }`
+  }
+  return JSON.stringify(v)
+}
+
+/**
+ * JSON sized to fit a small panel.
+ * - Anything that fits on one line stays on one line.
+ * - Consecutive short fields share a line.
+ */
+export function compactJson(v: unknown, indent = ''): string {
+  const one = flat(v)
+  if (
+    indent.length + one.length <= WIDTH ||
+    v === null ||
+    typeof v !== 'object'
+  )
+    return one
+  const inner = indent + '  '
+  const items = Array.isArray(v)
+    ? v.map((x) => compactJson(x, inner))
+    : Object.entries(v).map(
+        ([k, x]) => `${JSON.stringify(k)}: ${compactJson(x, inner)}`,
+      )
+  const lines: string[] = []
+  for (const item of items) {
+    const last = lines.length - 1
+    const joined = last >= 0 ? `${lines[last]}, ${item}` : ''
+    if (
+      last >= 0 &&
+      !item.includes('\n') &&
+      !lines[last].includes('\n') &&
+      inner.length + joined.length <= WIDTH
+    ) {
+      lines[last] = joined
+    } else {
+      lines.push(item)
+    }
+  }
+  const [open, close] = Array.isArray(v) ? ['[', ']'] : ['{', '}']
+  return `${open}\n${lines.map((l) => inner + l).join(',\n')}\n${indent}${close}`
+}

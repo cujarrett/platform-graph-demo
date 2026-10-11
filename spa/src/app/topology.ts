@@ -93,21 +93,6 @@ const KIND_FILL: Record<string, string> = {
             role="img"
             aria-label="Topology of the platform with the selected flow traced across it"
           ></svg>
-          <div class="topo-readout" [class]="'kind-' + current().kind">
-            <p class="topo-text">{{ current().text }}</p>
-            <p class="topo-who" [innerHTML]="html(current().who)"></p>
-            <div class="topo-claim-block">
-              <p class="topo-kicker">{{ current().heading }}</p>
-              <dl class="topo-claims">
-                @for (c of current().facts; track $index) {
-                  <div class="topo-claim">
-                    <dt>{{ c[0] }}</dt>
-                    <dd [innerHTML]="html(c[1])"></dd>
-                  </div>
-                }
-              </dl>
-            </div>
-          </div>
           <div class="topo-tip" #tip hidden></div>
         </div>
 
@@ -122,6 +107,38 @@ const KIND_FILL: Record<string, string> = {
       </div>
 
       <div class="topo-strip">
+        <div class="topo-card topo-readout" [class]="'kind-' + current().kind">
+          <div class="topo-head">
+            <ol class="topo-pips" aria-label="Steps">
+              @for (s of scenario().steps; track $index; let k = $index) {
+                <li>
+                  <button
+                    type="button"
+                    (click)="jump(k)"
+                    [title]="s.label || s.heading"
+                    [attr.aria-current]="k === step() ? 'step' : null"
+                    [attr.data-state]="
+                      k === step() ? 'active' : k < step() ? 'done' : 'todo'
+                    "
+                  >
+                    {{ k + 1 }}
+                  </button>
+                </li>
+              }
+            </ol>
+            <p class="topo-kicker">{{ current().heading }}</p>
+          </div>
+          <p class="topo-text">{{ current().text }}</p>
+          <p class="topo-who" [innerHTML]="html(current().who)"></p>
+          <dl class="topo-claims">
+            @for (c of current().facts; track $index) {
+              <div class="topo-claim">
+                <dt>{{ c[0] }}</dt>
+                <dd [innerHTML]="html(c[1])"></dd>
+              </div>
+            }
+          </dl>
+        </div>
         <div class="topo-card">
           <h3>
             What the team wrote ·
@@ -136,24 +153,6 @@ const KIND_FILL: Record<string, string> = {
           <pre class="topo-yaml"><code [innerHTML]="yaml()"></code></pre>
           <p class="topo-take" [innerHTML]="html(scenario().take)"></p>
           <p class="topo-foot" [innerHTML]="html(scenario().pattern)"></p>
-        </div>
-
-        <div class="topo-card">
-          <h3>The chain</h3>
-          <ol class="topo-steps">
-            @for (s of scenario().steps; track $index; let k = $index) {
-              <li
-                [attr.data-state]="
-                  k === step() ? 'active' : k < step() ? 'done' : 'todo'
-                "
-              >
-                <button type="button" (click)="jump(k)">
-                  <span class="n">{{ k + 1 }}</span>
-                  <span>{{ s.label || s.heading }}</span>
-                </button>
-              </li>
-            }
-          </ol>
         </div>
       </div>
     </section>
@@ -233,10 +232,8 @@ const KIND_FILL: Record<string, string> = {
         margin-right: 0.4rem;
       }
 
-      /* The stage keeps the map's own ratio so the readout, positioned in
-         percentages, stays over the empty corner of the drawing instead of
-         floating in letterbox space. Height comes from the flex row, width
-         follows from the ratio. */
+      /* The stage keeps the map's own ratio.
+         Height comes from the flex row, width follows from the ratio. */
       .topo-stage {
         position: relative;
         flex: 1;
@@ -519,74 +516,53 @@ const KIND_FILL: Record<string, string> = {
         font-size: 0.62rem;
       }
 
-      .topo-steps {
+      .topo-head {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        margin-bottom: 0.5rem;
+      }
+      .topo-head .topo-kicker {
+        margin: 0;
+      }
+      .topo-pips {
+        display: flex;
+        gap: 0.25rem;
         list-style: none;
         margin: 0;
         padding: 0;
       }
-      .topo-steps button {
-        width: 100%;
-        text-align: left;
-        font: inherit;
-        font-size: 0.7rem;
-        cursor: pointer;
+      .topo-pips button {
+        width: 1.35rem;
+        height: 1.35rem;
+        border-radius: 50%;
+        border: 1px solid var(--color-border);
         background: none;
-        border: 0;
-        border-radius: var(--radius-sm);
-        padding: 0.1rem 0.4rem;
-        display: grid;
-        grid-template-columns: 1rem 1fr;
-        gap: 0.4rem;
         color: var(--color-text-muted);
-        line-height: 1.35;
-      }
-      .topo-steps button:hover {
-        background: var(--color-surface-alt);
-        color: var(--color-text);
-      }
-      .topo-steps .n {
         font-family: var(--font-mono);
-        font-size: 0.6rem;
-        font-variant-numeric: tabular-nums;
+        font-size: 0.62rem;
+        cursor: pointer;
       }
-      .topo-steps li[data-state='done'] button {
+      .topo-pips button:hover {
         color: var(--color-text);
-        opacity: 0.55;
       }
-      .topo-steps li[data-state='active'] button {
+      .topo-pips button[data-state='done'] {
         background: var(--color-surface-alt);
         color: var(--color-text);
-        font-weight: 500;
       }
-      .topo-steps li[data-state='active'] .n {
+      .topo-pips button[data-state='active'] {
+        border-color: var(--topo-registry);
         color: var(--topo-registry);
+        font-weight: 700;
       }
 
-      /* The github zone stops short, so the bottom-left corner is empty on every
-         scene and the words sit beside the map rather than over it. */
       .topo-readout {
-        position: absolute;
-        left: 1.4%;
-        bottom: 2.5%;
-        width: 29%;
-        min-width: 14rem;
-        z-index: 1;
-        background: var(--color-surface-alt);
-        border: 1px solid var(--color-border);
-        border-radius: var(--radius-sm);
-        padding: 0.65rem 0.8rem 0.7rem;
+        border-left: 3px solid var(--color-border);
       }
-      .topo-claim-block {
-        margin-top: 0.45rem;
-        padding-top: 0.4rem;
+      .topo-readout .topo-claims {
+        margin-top: 0.5rem;
+        padding-top: 0.45rem;
         border-top: 1px solid var(--color-border);
-      }
-      @media (max-width: 980px) {
-        .topo-readout {
-          position: static;
-          width: auto;
-          margin-top: 0.75rem;
-        }
       }
       .topo-kicker {
         font-size: 0.62rem;
@@ -769,8 +745,8 @@ export class Topology implements AfterViewInit, OnDestroy {
     this.playing.set(false)
   }
 
-  // Left and right page through the current flow's steps.
-  // Right on the last step moves to the next flow.
+  // Left and right page through every step of every flow, stopping at both ends.
+  // Paging by key pauses playback, or holding a key would fight the timer.
   protected onKey(e: KeyboardEvent): void {
     if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
@@ -782,11 +758,13 @@ export class Topology implements AfterViewInit, OnDestroy {
       return
     e.preventDefault()
 
-    const next = this.step() + (e.key === 'ArrowRight' ? 1 : -1)
-    if (next >= 0 && next < this.scenario().steps.length) this.jump(next)
-    else if (e.key === 'ArrowRight' && this.si() < SCENARIOS.length - 1) {
-      this.pick(this.si() + 1)
-    }
+    const dir = e.key === 'ArrowRight' ? 1 : -1
+    const next = this.step() + dir
+    if (next >= 0 && next < this.scenario().steps.length) return this.jump(next)
+    const flow = this.si() + dir
+    if (flow < 0 || flow >= SCENARIOS.length) return
+    this.si.set(flow)
+    this.jump(dir === 1 ? 0 : SCENARIOS[flow].steps.length - 1)
   }
 
   protected toggle(): void {

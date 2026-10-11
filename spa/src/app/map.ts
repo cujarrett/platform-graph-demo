@@ -69,7 +69,7 @@ export interface Scenario {
   yaml: [string, 'd' | 'c'][]
   /** The takeaway under it. <b> for what the team did, <em> for what the platform did. */
   take: string
-  /** The pattern this scene is, in one line, with where it came from. */
+  /** Links to the decision behind this scene and to where the pattern came from. */
   pattern: string
   steps: Step[]
 }
@@ -314,7 +314,7 @@ export const SCENARIOS: Scenario[] = [
       ['}', 'd'],
     ],
     take: '<b>The whole subgraph schema.</b> It lives in the team\u2019s repo, beside the resolvers, and reaches the registry only through the steps on this map.',
-    pattern: `Schema lives with the code that serves it. <a href="${GRAPH_DOC}#1-where-the-schema-file-lives" target="_blank" rel="noopener">Decision 1</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
+    pattern: `<a href="${GRAPH_DOC}#1-where-the-schema-file-lives" target="_blank" rel="noopener">Decision 1</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
     steps: [
       {
         from: 'schema',
@@ -376,7 +376,7 @@ export const SCENARIOS: Scenario[] = [
       ['          --name records --schema schema.graphql', 'd'],
     ],
     take: '<b>One CI step.</b> <em>GraphOS</em> composes the proposal with every other subgraph and replays real traffic against it.',
-    pattern: `Schema checks in CI, as Apollo documents them. <a href="${GRAPH_DOC}#protecting-the-graph" target="_blank" rel="noopener">Protecting the graph</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
+    pattern: `<a href="${GRAPH_DOC}#protecting-the-graph" target="_blank" rel="noopener">Protecting the graph</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
     steps: [
       {
         from: 'ci',
@@ -444,7 +444,7 @@ export const SCENARIOS: Scenario[] = [
       'https://github.com/cujarrett/storefront-records/blob/main/.github/CODEOWNERS',
     yaml: [['* @cujarrett', 'd']],
     take: '<b>One line, in the records repo.</b> GitHub asks its owner for review on every change. <em>CI</em> signs the image and writes its digest to git.',
-    pattern: `CODEOWNERS, a signed image, and a digest written to git. <a href="${GRAPH_DOC}#2-how-the-schema-reaches-the-registry" target="_blank" rel="noopener">Decision 2</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
+    pattern: `<a href="${GRAPH_DOC}#2-how-the-schema-reaches-the-registry" target="_blank" rel="noopener">Decision 2</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
     steps: [
       {
         from: 'codeowners',
@@ -536,7 +536,7 @@ export const SCENARIOS: Scenario[] = [
       ['    image: ghcr.io/…/records@sha256:…', 'd'],
     ],
     take: '<b>Two lines.</b> <em>The platform</em> renders the pod, its mesh policy and the Subgraph CR. <em>The operator</em> publishes.',
-    pattern: `GitOps, then the Apollo operator publishing from the running image. <a href="${GRAPH_DOC}#what-gets-rendered" target="_blank" rel="noopener">What gets rendered</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
+    pattern: `<a href="${GRAPH_DOC}#what-gets-rendered" target="_blank" rel="noopener">What gets rendered</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
     steps: [
       {
         from: 'workspace',
@@ -640,7 +640,7 @@ export const SCENARIOS: Scenario[] = [
       ['    host: graph-prod.local.lab', 'd'],
     ],
     take: '<b>Two lines.</b> The router, its config and its mesh policy, <em>the platform built</em>.',
-    pattern: `A router the operator rolls to each launch, by digest. <a href="${GRAPH_DOC}#topology" target="_blank" rel="noopener">Topology</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
+    pattern: `<a href="${GRAPH_DOC}#topology" target="_blank" rel="noopener">Topology</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
     steps: [
       {
         from: 'registry',

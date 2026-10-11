@@ -22,8 +22,9 @@ dev:
             exit 1
         fi
     done
-    # A port-forward exits when its pod restarts, so it runs in a loop.
-    (while true; do kubectl port-forward svc/storefront-router -n graph-prod 14000:80 >/dev/null 2>&1; sleep 1; done) &
+    # A port-forward exits when its pod restarts or the link drops, so it runs in a loop.
+    # || true, or set -e ends the loop on the first exit instead of retrying.
+    (while true; do kubectl port-forward svc/storefront-router -n graph-prod 14000:80 >/dev/null 2>&1 || true; sleep 1; done) &
     forward=$!
     # Kill only what this recipe started, so a failure here cannot take out the shell.
     trap 'kill $forward $backend 2>/dev/null; pkill -f "port-forward svc/storefront-router" 2>/dev/null; true' EXIT
