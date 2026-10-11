@@ -72,3 +72,21 @@ export function compactJson(v: unknown, indent = ''): string {
   const [open, close] = Array.isArray(v) ? ['[', ']'] : ['{', '}']
   return `${open}\n${lines.map((l) => inner + l).join(',\n')}\n${indent}${close}`
 }
+
+/**
+ * Colours one line of GraphQL SDL or YAML with the same token classes as JSON.
+ * The line is escaped first, so it can never become markup.
+ */
+export function highlightCode(line: string): string {
+  return escapeHtml(line).replace(
+    /("(?:\\.|[^"\\])*")|(@\w+)|\b(type|extend|schema)\b|([\w-]+)(?=:)|\b([A-Z]\w*)\b/g,
+    (match, str, dir, kw, key, typ) => {
+      if (str !== undefined) return `<span class="j-str">${match}</span>`
+      if (dir !== undefined || kw !== undefined)
+        return `<span class="j-lit">${match}</span>`
+      if (key !== undefined) return `<span class="j-key">${match}</span>`
+      if (typ !== undefined) return `<span class="j-num">${match}</span>`
+      return match
+    },
+  )
+}

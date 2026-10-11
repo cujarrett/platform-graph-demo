@@ -12,6 +12,7 @@ import {
   viewChild,
 } from '@angular/core'
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser'
+import { highlightCode } from './json-highlight'
 import {
   BOXES,
   PODS,
@@ -477,13 +478,6 @@ const KIND_FILL: Record<string, string> = {
         color: var(--topo-built);
         font-weight: 600;
       }
-      .topo-yaml .d {
-        color: var(--topo-declared);
-        font-weight: 600;
-      }
-      .topo-yaml .c {
-        color: var(--color-text-muted);
-      }
       .topo-foot {
         margin: 0.6rem 0 0;
         font-size: 0.68rem;
@@ -664,12 +658,11 @@ export class Topology implements AfterViewInit, OnDestroy {
   protected readonly yaml = computed(() =>
     this.sanitizer.bypassSecurityTrustHtml(
       this.scenario()
-        .yaml.map(([text, cls]) =>
-          text
-            ? `<span class="${cls}">${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</span>`
-            : '',
+        .yaml.map(
+          ([text, cls]) =>
+            `<span class="code-line ${cls}">${highlightCode(text) || ' '}</span>`,
         )
-        .join('\n'),
+        .join(''),
     ),
   )
 
@@ -696,6 +689,7 @@ export class Topology implements AfterViewInit, OnDestroy {
   private ready = false
   private visible = false
   private observer?: IntersectionObserver
+  private seen = false
   private readonly reduced = matchMedia('(prefers-reduced-motion: reduce)')
     .matches
 
@@ -717,6 +711,14 @@ export class Topology implements AfterViewInit, OnDestroy {
     this.observer = new IntersectionObserver(
       (entries) => {
         this.visible = entries[0].isIntersecting
+        // Step 1 has no motion, so the first arrival skips to step 2 and the map moves at once.
+        if (this.visible && !this.seen) {
+          this.seen = true
+          if (this.playing() && this.si() === 0 && this.step() === 0) {
+            this.zone.run(() => this.step.set(1))
+            this.startedAt = performance.now()
+          }
+        }
       },
       { threshold: 0.35 },
     )

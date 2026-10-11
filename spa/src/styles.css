@@ -617,3 +617,15 @@ a.hop {
 a.hop:hover {
   background: color-mix(in srgb, currentColor 12%, var(--color-surface));
 }
+/* Code panel lines are injected HTML, so their styles live here, not in the component. */
+.code-line {
+  display: block;
+  padding-left: 0.5rem;
+  border-left: 2px solid transparent;
+}
+.code-line.d {
+  border-left-color: var(--topo-declared);
+}
+.code-line.c {
+  opacity: 0.55;
+}
