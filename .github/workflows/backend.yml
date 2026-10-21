@@ -63,4 +63,4 @@ jobs:
       image: ghcr.io/cujarrett/platform-graph-demo-backend
       file: platform-graph-demo/graph-demo-api.yaml
     secrets:
-      homelab_pat: ${{ secrets.HOMELAB_WORKSPACES_PAT }}
+      app_private_key: ${{ secrets.HOMELAB_WORKSPACES_APP_KEY }}
