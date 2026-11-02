@@ -15,8 +15,14 @@ spa/        the Angular page, in Launchpad's how-it-works shape
 
 ```bash
 just install
-just dev          # page and backend from source, against the prod router
 ```
+
+Then pick a backend. The page opens on http://localhost:4200.
+
+| Command | Backend |
+|---|---|
+| `just dev` | `backend/` from source on `localhost:18080`, against the prod router. Needs `kubectl` pointed at the homelab |
+| `cd spa && npm run start:prod-api` | The live backend at `graph.mattjarrett.dev`. Needs only Node |
 
 ## Before opening a PR
 

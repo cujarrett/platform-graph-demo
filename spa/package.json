@@ -5,6 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
+    "start:prod-api": "ng serve --proxy-config proxy.prod.conf.json",
     "build": "ng build",
     "lint": "tsc --noEmit -p tsconfig.app.json && prettier --check src --config ../.prettierrc.json",
     "format": "prettier --write src --config ../.prettierrc.json"
