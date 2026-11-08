@@ -39,7 +39,6 @@ spa/        the walkthrough page, an Angular app in Launchpad's shape
 
 | Secret | Used by | Scope needed |
 |---|---|---|
-| `APOLLO_KEY` | every workflow | a graph API key for `storefront-homelab`, not a personal key |
-| `HOMELAB_WORKSPACES_APP_KEY` | deploy + promote workflows | the `homelab-workspaces-deployer` App key. Rotate with [GitHub Tokens → Rotating an App key](https://github.com/cujarrett/homelab/blob/main/docs/github-tokens.md#rotating-an-app-key) |
+| `HOMELAB_WORKSPACES_APP_KEY` | `backend.yml` and `spa.yml` deploy jobs | the `homelab-workspaces-deployer` App key. Rotate with [GitHub Tokens → Rotating an App key](https://github.com/cujarrett/homelab/blob/main/docs/github-tokens.md#rotating-an-app-key) |
 
 `GITHUB_TOKEN` (built in) covers the `ghcr.io` image push.
