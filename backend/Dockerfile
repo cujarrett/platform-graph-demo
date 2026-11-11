@@ -7,7 +7,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w" -o backend .
 
-FROM ghcr.io/cujarrett/base-go:static-debian13@sha256:c52fc98ed00a23a3301b396062feb4385e86dd64fa1a6549ffa39791b2317904
+FROM ghcr.io/cujarrett/base-go:static-debian13@sha256:a94ee45716785690dfef1b36147106a454898671dda1265cfbe756ea1e373afa
 COPY --from=builder /app/backend /backend
 ENV PORT=8080
 EXPOSE 8080
