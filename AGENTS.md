@@ -9,7 +9,8 @@ The page at graph.mattjarrett.dev and the backend behind it. The subgraphs it de
 - **Whenever a task requires a commit, always give a suggested commit message** - never leave the user to write it themselves.
 - **Give `git add` and the commit as two separate steps, listing every file explicitly.** Never `git add .` or `git add -A`.
 - **Never output a `git push` command.** The user pushes as a deliberate human step.
-- **No semicolons in JS/TS.** Enforced by Prettier (`semi: false`, root `.prettierrc.json`) and ESLint (`semi: ["error", "never"]`, root `eslint.config.js`). Both subgraphs share these root configs rather than duplicating them.
+- **Backend: Go, stdlib only.** `net/http` and `slog`, with graceful shutdown and `/healthz`. Prometheus metrics are the one library.
+- **Spa: no semicolons in JS/TS.** Enforced by Prettier (`semi: false`, root `.prettierrc.json`) and ESLint (`semi: ["error", "never"]`, root `eslint.config.js`).
 
 ### Pre-commit safety check
 
@@ -27,7 +28,7 @@ Before telling the user to commit, always run `/security-review`. Once it confir
 ## Layout
 
 ```
-backend/    an Api: fixed queries against the prod router, GitHub reads for the live rows
+backend/    a Go Api: fixed queries against the prod router, GitHub reads for the live rows
 spa/        the walkthrough page, an Angular app in Launchpad's shape
 ```
 

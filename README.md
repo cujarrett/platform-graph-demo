@@ -7,7 +7,7 @@ The subgraphs live in their own repos, one team each: [storefront-records](https
 ## Layout
 
 ```
-backend/    an Api: fixed queries against the prod router, GitHub reads for the live rows
+backend/    a Go Api: fixed queries against the prod router, GitHub reads for the live rows
 spa/        the Angular page, in Launchpad's how-it-works shape
 ```
 

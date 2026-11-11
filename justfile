@@ -2,14 +2,13 @@
 ci:
     #!/usr/bin/env bash
     set -euo pipefail
-    (cd backend && npm run lint && npm run test && npm run build)
+    (cd backend && go mod tidy -diff && golangci-lint run && go test -race ./... && go build -race -o backend .)
     (cd spa && npm run lint && npm run build)
 
 install:
     #!/usr/bin/env bash
     set -euo pipefail
     npm install
-    (cd backend && npm install)
     (cd spa && npm install)
 
 # the page and backend from source, against the prod router. Nothing deployed.
@@ -29,7 +28,7 @@ dev:
     # Kill only what this recipe started, so a failure here cannot take out the shell.
     trap 'kill $forward $backend 2>/dev/null; pkill -f "port-forward svc/storefront-router" 2>/dev/null; true' EXIT
     until curl -s -o /dev/null localhost:14000/ 2>/dev/null; do sleep 1; done
-    (cd backend && ROUTER_URL=http://localhost:14000/ PORT=18080 METRICS_PORT=19090 npm run dev) &
+    (cd backend && ROUTER_URL=http://localhost:14000/ PORT=18080 METRICS_PORT=19090 go run .) &
     backend=$!
     until curl -s -o /dev/null localhost:18080/healthz 2>/dev/null; do sleep 1; done
     (cd spa && npm start)
@@ -37,6 +36,6 @@ dev:
 # stop anything left behind by a previous just dev
 stop:
     -@pkill -f "ng serve" 2>/dev/null || true
-    -@pkill -f "tsx src/index.ts" 2>/dev/null || true
+    -@pkill -f "exe/backend" 2>/dev/null || true
     -@pkill -f "port-forward svc/storefront-router" 2>/dev/null || true
     @echo "stopped"
