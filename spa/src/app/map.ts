@@ -269,6 +269,15 @@ export const BOXES: Record<string, Box> = {
     sub: 'moves images test → prod',
     kind: 'built',
   },
+  prEnv: {
+    x: 428,
+    y: 636,
+    w: 438,
+    h: 44,
+    label: 'PR environment',
+    sub: 'one router per open PR · test + the PR',
+    kind: 'built',
+  },
 
   check: {
     x: 922,
@@ -341,7 +350,7 @@ export const SCENARIOS: Scenario[] = [
         facts: [
           ['changed', 'schema + resolver'],
           ['reviewers', 'from CODEOWNERS'],
-          ['required checks', 'test, schema-check'],
+          ['required checks', 'subgraph / test, subgraph / schema-check'],
         ],
       },
       {
@@ -350,12 +359,12 @@ export const SCENARIOS: Scenario[] = [
         label: 'checks start',
         kind: 'built',
         text: 'CI runs the unit tests and sends the proposed schema to GraphOS for a check.',
-        who: 'Built by <b>GitHub Actions</b>. Both jobs are required by branch protection.',
+        who: 'Built by <b>GitHub Actions</b>, from the platform\u2019s shared subgraph workflow.',
         heading: 'What runs',
         facts: [
-          ['test', 'lint, test, build'],
+          ['test', 'generate, vet, test'],
           ['schema-check', 'rover subgraph check'],
-          ['image built', 'not yet, only on main'],
+          ['image built', 'yes, a pr- image for the PR environment'],
         ],
       },
     ],
@@ -364,9 +373,8 @@ export const SCENARIOS: Scenario[] = [
   {
     key: 'check',
     name: 'The check',
-    wroteTitle: 'storefront-records/.github/workflows/ci.yml',
-    wroteUrl:
-      'https://github.com/cujarrett/storefront-records/blob/main/.github/workflows/ci.yml',
+    wroteTitle: 'homelab/.github/workflows/subgraph.yml',
+    wroteUrl: `${HOMELAB}/.github/workflows/subgraph.yml`,
     yaml: [
       ['schema-check:', 'c'],
       ['  steps:', 'c'],
@@ -375,7 +383,7 @@ export const SCENARIOS: Scenario[] = [
       ['        rover subgraph check storefront-homelab@test', 'd'],
       ['          --name records --schema schema.graphql', 'd'],
     ],
-    take: '<b>One CI step.</b> <em>GraphOS</em> composes the proposal with every other subgraph and replays real traffic against it.',
+    take: '<b>Nothing, for the records team.</b> The platform\u2019s shared workflow runs the check. <em>GraphOS</em> composes the proposal with every other subgraph and replays real traffic against it.',
     pattern: `<a href="${GRAPH_DOC}#protecting-the-graph" target="_blank" rel="noopener">Protecting the graph</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
     steps: [
       {
@@ -437,6 +445,93 @@ export const SCENARIOS: Scenario[] = [
   },
 
   {
+    key: 'prenv',
+    name: 'PR environment',
+    wroteTitle: 'storefront-records/.github/workflows/ci.yml',
+    wroteUrl:
+      'https://github.com/cujarrett/storefront-records/blob/main/.github/workflows/ci.yml',
+    yaml: [
+      ['subgraph:', 'c'],
+      ['  uses: cujarrett/homelab/.github/workflows/subgraph.yml@main', 'd'],
+      ['  with:', 'd'],
+      ['    name: records', 'd'],
+    ],
+    take: '<b>Nothing, for the records team.</b> Opening the PR is enough. <em>The platform</em> stands up the whole supergraph with this PR swapped in, then tears it down when the PR closes.',
+    pattern: `<a href="${GRAPH_DOC}#pr-environments" target="_blank" rel="noopener">PR environments</a> · <a href="${NOVEL}" target="_blank" rel="noopener">nothing novel</a>`,
+    steps: [
+      {
+        from: 'ci',
+        to: 'ghcr',
+        label: 'build a pr- image',
+        kind: 'built',
+        text: 'CI builds the PR\u2019s image with signed provenance and tags it for this PR only.',
+        who: 'Built by <b>GitHub Actions</b>, from the shared subgraph workflow.',
+        heading: 'The PR image',
+        facts: [
+          ['tag', 'pr-<number>-<commit>'],
+          ['built from', 'refs/pull/<number>'],
+          ['Kargo', 'ignores it, so it never reaches test'],
+        ],
+      },
+      {
+        from: 'argocd',
+        to: 'prEnv',
+        label: 'one environment per open PR',
+        kind: 'built',
+        text: 'ArgoCD asks GitHub for open PRs every minute. Each one gets its own namespace.',
+        who: 'By <b>ArgoCD</b>\u2019s pull request generator.',
+        heading: 'The environment',
+        facts: [
+          ['namespace', 'graph-pr-records-<number>'],
+          ['runs', 'the PR\u2019s GraphApi + a router'],
+          ['who gets one', 'PRs from allowed authors, never forks'],
+        ],
+      },
+      {
+        from: 'kyverno',
+        to: 'prEnv',
+        label: 'PR builds stay here',
+        kind: 'gate',
+        text: 'A pull request build may run only in a graph-pr- namespace. Test and prod still need a main build.',
+        who: 'Enforced by <b>Kyverno</b>.',
+        heading: 'Provenance',
+        facts: [
+          ['graph-pr-*', 'main or pull request builds'],
+          ['graph-test, graph-prod', 'main builds only'],
+        ],
+      },
+      {
+        from: 'xp',
+        to: 'prEnv',
+        label: 'test + this PR',
+        kind: 'built',
+        text: 'Crossplane lists test\u2019s Subgraph CRs and swaps in the PR\u2019s own. Rover composes the supergraph inside the router pod.',
+        who: 'Rendered by <b>Crossplane</b>. Composed by <b>rover</b>.',
+        heading: 'The supergraph',
+        facts: [
+          ['schemas', 'read from each image'],
+          ['published to GraphOS', 'nothing'],
+          ['test promotes', 'the router restarts and composes again'],
+        ],
+      },
+      {
+        from: 'prEnv',
+        to: 'pr',
+        label: 'comment on the PR',
+        kind: 'built',
+        text: 'Once the environment is healthy, a comment on the PR says how to reach it. Closing the PR deletes everything.',
+        who: 'By <b>ArgoCD notifications</b>.',
+        heading: 'On the PR',
+        facts: [
+          ['comment', 'environment, Argo link, a query to run'],
+          ['each push', 'updates the same comment'],
+          ['cleanup', 'automatic when the PR closes'],
+        ],
+      },
+    ],
+  },
+
+  {
     key: 'merge',
     name: 'Review and merge',
     wroteTitle: 'storefront-records/.github/CODEOWNERS',
@@ -465,12 +560,12 @@ export const SCENARIOS: Scenario[] = [
         to: 'ci',
         label: 'merge to main',
         kind: 'declared',
-        text: 'Merged. CI runs once more, now on main, where it may build an image.',
+        text: 'Merged. CI runs once more, now on main, and builds the image Kargo can promote.',
         who: 'By the <b>records team</b>.',
         heading: 'On main',
         facts: [
           ['tests', 'again'],
-          ['build-and-push', 'only here'],
+          ['image tag', 'sha-<commit>, the only tag Kargo watches'],
         ],
       },
       {
