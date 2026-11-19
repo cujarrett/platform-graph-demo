@@ -75,8 +75,8 @@ const KIND_FILL: Record<string, string> = {
             [attr.aria-selected]="si() === i"
             (click)="pick(i)"
           >
-            <span class="k">{{ '0' + (i + 1) }}</span
-            >{{ s.name }}
+            <span class="k">{{ '0' + (i + 1) }}</span>
+            <span>{{ s.name }}</span>
           </button>
         }
         <ul class="topo-legend">
