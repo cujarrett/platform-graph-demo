@@ -21,11 +21,12 @@ import type { Lane } from './map'
       </section>
     </div>
     <footer class="app-footer">
+      Made by
       <a
         href="https://mattjarrett.dev"
         target="_blank"
         rel="noopener noreferrer"
-        >Made by Matt Jarrett</a
+        >Matt Jarrett</a
       >
       with ♥ and Kubernetes
     </footer>
